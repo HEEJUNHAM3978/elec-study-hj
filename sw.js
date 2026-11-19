@@ -1,4 +1,4 @@
-const CACHE = "elec-study-v22";
+const CACHE = "elec-study-v23";
 const ASSETS = [
   "./전기기사-공부앱.html",
   "./manifest.webmanifest",
