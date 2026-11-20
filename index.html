@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head><meta name="robots" content="noindex,nofollow">
+<head>
+<meta name="robots" content="noindex,nofollow">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>전기기사 공부</title>
@@ -2466,6 +2467,11 @@ html.ox-no-scroll main {
 /* 0.7.32 스프라이트 층 겹침 방지: 얼굴 그림이 있으면 바탕(normal) 층은 자리만 차지하고 보이지 않는다 */
 .ox-sprite-base { visibility: hidden; }
 .ox-ch.is-blink .ox-sprite-face { opacity: 0; }
+
+/* 0.7.33 판정 글자는 밀 때만 보인다 / SVG는 잘리지 않게 */
+.reigns-card .reigns-choice { visibility: hidden; }
+.reigns-card.is-dragging .reigns-choice { visibility: visible; }
+.reigns-card .cram-fig svg { overflow: visible; }
 </style>
 </head>
 <body>
@@ -18817,7 +18823,7 @@ exports.withFuzzing = withFuzzing;
     return "";
   }
   /* 0.7.29: 문장과 직접 맞지 않는 그림은 게임 카드에서 뺀다(fig-fit-0729.md) */
-  var PLAY_NO_FIG = {"cram-em-05":1,"cram-power-06":1,"cram-machines-07":1,"cram-code-05":1,"cram-em-03":1,"cram-em-06":1,"cram-circuit-02":1,"cram-control-02":1,"cram-em-08":1,"cram-machines-05":1,"cram-machines-04":1,"ox-avg-t":1,"ox-avg-f":1,"ox-crest-t":1,"ox-crest-f":1,"ox-form-t":1,"ox-form-f":1,"ox-g-div-t":1,"ox-g-div-f":1,"ox-g-cl-i-t":1,"ox-g-cl-i-f":1};
+  var PLAY_NO_FIG = {"cram-em-05":1,"cram-power-06":1,"cram-machines-07":1,"cram-code-05":1,"cram-em-03":1,"cram-em-06":1,"cram-circuit-02":1,"cram-control-02":1,"cram-em-08":1,"cram-machines-05":1,"cram-machines-04":1,"ox-avg-t":1,"ox-avg-f":1,"ox-crest-t":1,"ox-crest-f":1,"ox-form-t":1,"ox-form-f":1,"ox-g-div-t":1,"ox-g-div-f":1,"ox-g-cl-i-t":1,"ox-g-cl-i-f":1,"cram-circuit-05":1,"ox-rms-t":1,"ox-rms-f":1,"cram-code-01":1,"blank-lowv":1,"cram-circuit-08":1,"ox-wn-t":1,"ox-wn-f":1,"ox-g-wd-t":1,"ox-g-wd-f":1,"cram-em-04":1,"ox-pact-t":1,"ox-pact-f":1,"ox-dact-t":1,"ox-dact-f":1,"ox-p-pid2-t":1,"ox-p-pid2-f":1,"cram-machines-08":1,"blank-skin":1,"cram-em-09":1,"blank-tau":1,"ox-imp-t":1,"ox-imp-f":1,"ox-p-imp2-t":1,"ox-p-imp2-f":1,"ox-sup-t":1,"ox-sup-f":1,"ox-y3-t":1,"ox-y3-f":1,"ox-p-yd-t":1,"ox-p-yd-f":1,"ox-xl-t":1,"ox-xl-f":1,"cram-control-03":1};
   function playItemFromCram(card) {
     return { kind: "cram", id: card.id, subject: card.subject, title: card.title, fig: PLAY_NO_FIG[card.id] ? "" : card.fig, card: card,
       q: card.quiz && card.quiz.q, truth: card.quiz && card.quiz.truth, explain: card.quiz && card.quiz.explain, type: "ox" };
@@ -18833,7 +18839,7 @@ exports.withFuzzing = withFuzzing;
     return { kind: "ox", id: card.id, subject: card.subject, title: subjectLabel(card.subject), fig: fig, q: card.q, truth: card.truth, explain: card.explain, type: "ox", formulaId: card.formulaId };
   }
   function playItemFromBlank(b) {
-    return { kind: "blank", id: b.id, subject: b.subject, title: b.title, fig: b.fig, q: b.q, type: "choice",
+    return { kind: "blank", id: b.id, subject: b.subject, title: b.title, fig: PLAY_NO_FIG[b.id] ? "" : b.fig, q: b.q, type: "choice",
       left: b.left, right: b.right, answer: b.answer, explain: b.explain };
   }
   function lookupPlayItem(id) {
@@ -19058,15 +19064,21 @@ exports.withFuzzing = withFuzzing;
         first = false;
         var b = n.getBBox();
         if (!b.width && !b.height) return;
-        x1 = Math.min(x1, b.x); y1 = Math.min(y1, b.y); x2 = Math.max(x2, b.x + b.width); y2 = Math.max(y2, b.y + b.height);
+        var xs = [b.x, b.x + b.width], ys = [b.y, b.y + b.height];
+        var tl = n.transform && n.transform.baseVal && n.transform.baseVal.numberOfItems ? n.transform.baseVal.consolidate() : null;
+        if (tl) {
+          var mt = tl.matrix, px = [], py = [];
+          xs.forEach(function (X) { ys.forEach(function (Y) { px.push(mt.a * X + mt.c * Y + mt.e); py.push(mt.b * X + mt.d * Y + mt.f); }); });
+          xs = [Math.min.apply(null, px), Math.max.apply(null, px)]; ys = [Math.min.apply(null, py), Math.max.apply(null, py)];
+        }
+        x1 = Math.min(x1, xs[0]); y1 = Math.min(y1, ys[0]); x2 = Math.max(x2, xs[1]); y2 = Math.max(y2, ys[1]);
       });
     } catch (err) { x1 = 1e9; }
     tmp.removeChild(svg); document.body.removeChild(tmp);
     if (next) host.insertBefore(svg, next); else host.appendChild(svg);
     if (x1 < x2 && y1 < y2) {
       var pad = 8;
-      x1 = Math.max(vb[0], x1 - pad); y1 = Math.max(vb[1], y1 - pad);
-      x2 = Math.min(vb[0] + vb[2], x2 + pad); y2 = Math.min(vb[1] + vb[3], y2 + pad);
+      x1 = x1 - pad; y1 = y1 - pad; x2 = x2 + pad; y2 = y2 + pad;
       svg.setAttribute("viewBox", x1 + " " + y1 + " " + (x2 - x1) + " " + (y2 - y1));
       svg.removeAttribute("width"); svg.removeAttribute("height");
       var bg = svg.querySelector("rect"); if (bg && bg.getAttribute("fill") === "#fff") { bg.setAttribute("x", x1); bg.setAttribute("y", y1); bg.setAttribute("width", x2 - x1); bg.setAttribute("height", y2 - y1); }
