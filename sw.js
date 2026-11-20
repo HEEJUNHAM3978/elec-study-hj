@@ -1,4 +1,4 @@
-const CACHE = "elec-study-v25";
+const CACHE = "elec-study-v26";
 const ASSETS = [
   "./전기기사-공부앱.html",
   "./manifest.webmanifest",
@@ -16,6 +16,19 @@ self.addEventListener("activate", function (e) {
 });
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
+  var isPage = e.request.mode === "navigate" || /\.html(\?|$)|\/$/.test(new URL(e.request.url).pathname);
+  if (isPage) {
+    e.respondWith(
+      fetch(e.request, { cache: "no-store" }).then(function (res) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+        return res;
+      }).catch(function () {
+        return caches.match(e.request).then(function (hit) { return hit || caches.match("./전기기사-공부앱.html"); });
+      })
+    );
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(function (hit) {
       return hit || fetch(e.request).then(function (res) {
