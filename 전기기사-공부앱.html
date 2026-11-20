@@ -2449,7 +2449,7 @@ html.ox-no-scroll main {
 .reigns-card .reigns-choice { visibility: hidden; }
 .reigns-card.is-dragging .reigns-choice { visibility: visible; }
 .reigns-card .cram-fig svg { overflow: visible; }
-/* ===== 0.7.35 스테이지 · 코인 · 코스튬 · 뽑기 · 계산기 팝업 ===== */
+/* ===== 0.7.36 스테이지 · 코인 · 코스튬 · 뽑기 · 계산기 팝업 ===== */
 .tabs button { padding: 0 0.5rem; }
 .stage-hub, .shop, .gacha, .settings { display: flex; flex-direction: column; gap: 0.7rem; padding-bottom: 1rem; min-width: 0; }
 .stage-hub h1, .shop h1, .gacha h1, .settings h1 { margin: 0; font-size: 1.7rem; }
@@ -2567,6 +2567,8 @@ html.ox-no-scroll main {
 .calc-pop-panel .calc-key { min-height: 2.65rem; }
 .reigns-card .quiz-fig-block .web-img { max-height: 34vh; }
 
+.shop-draw{font-size:12px;color:#888;text-align:center;margin:4px 0 0}
+.shop-exchange{margin-top:12px;width:100%}
 </style>
 </head>
 <body>
@@ -14716,7 +14718,7 @@ exports.withFuzzing = withFuzzing;
   };
 
 
-  /* 0.7.35: 그림 확대(라이트박스) 기능은 뺐다. 그림을 눌러도 아무 일도 없다. */
+  /* 0.7.36: 그림 확대(라이트박스) 기능은 뺐다. 그림을 눌러도 아무 일도 없다. */
 
   function boostQuizFig(svg) {
     if (window.ElecNoBoost) return;
@@ -18716,7 +18718,7 @@ exports.withFuzzing = withFuzzing;
     return allCramCards().map(playItemFromCram).concat((DATA.oxCards || []).map(playItemFromOx), CRAM_BLANKS.map(playItemFromBlank));
   }
   window.ElecPlayItems = allPlayItems;
-  /* ===== 0.7.35 합친 개념카드 게임: 스테이지 · 난이도 · 과목 · 코인 · 코스튬 ===== */
+  /* ===== 0.7.36 합친 개념카드 게임: 스테이지 · 난이도 · 과목 · 코인 · 코스튬 ===== */
   var STAGE_DIFFS = {
     easy:   { id: "easy",   label: "쉬움",   start: 5, dmg: 1, pen: 0, mult: 1,   heal: 0.15, desc: "OX·쉬운 기출 위주 · 틀리면 게이지 −1 · 점수 감점 없음" },
     normal: { id: "normal", label: "보통",   start: 6, dmg: 2, pen: 1, mult: 1.5, heal: 0.15, desc: "OX·빈칸·암기·공식·기출을 고루 · 틀리면 게이지 −2 · 점수 −1" },
@@ -18758,7 +18760,7 @@ exports.withFuzzing = withFuzzing;
     if (!w.migrated) { migrateLegacy0735(w); w.migrated = 35; }
     return w;
   }
-  /* 0.7.35: 옛 OX 게임·개념카드 게임 저장을 합친 게임으로 옮긴다 */
+  /* 0.7.36: 옛 OX 게임·개념카드 게임 저장을 합친 게임으로 옮긴다 */
   function migrateLegacy0735(w) {
     var leg = { coins: 0 };
     var g = state.game;
@@ -19133,7 +19135,7 @@ exports.withFuzzing = withFuzzing;
     return buildStageQueue(w.pref.diff, w.pref.groups, rng);
   }
 
-  /* 0.7.35 중요도 점수: 계산 기출 4~5점, 비계산 기출·핵심 정리 3점, 빈칸·중요 공식 2점, 일반 OX 1점 */
+  /* 0.7.36 중요도 점수: 계산 기출 4~5점, 비계산 기출·핵심 정리 3점, 빈칸·중요 공식 2점, 일반 OX 1점 */
   function itemImportance(item) {
     if (!item) return 1;
     if (item.imp) return item.imp;
@@ -19342,7 +19344,7 @@ exports.withFuzzing = withFuzzing;
     return [play];
   }
 
-  /* ---- 0.7.35 결과 · 클리어 · 코스튬 · 뽑기 · 설정 · 계산기 팝업 ---- */
+  /* ---- 0.7.36 결과 · 클리어 · 코스튬 · 뽑기 · 설정 · 계산기 팝업 ---- */
   function diffPill(s) {
     var D = STAGE_DIFFS[(s && s.diff)] || STAGE_DIFFS.normal;
     return el("span", { class: "diff-pill diff-" + D.id, text: D.label });
@@ -19422,13 +19424,12 @@ exports.withFuzzing = withFuzzing;
     return [play];
   }
 
-  function buyCostume(who, id) {
+  var TICKET_COST = 500;
+  function exchangeTicket() {
     var w = ensureWallet();
-    var price = COSTUME_PRICE[costumeIndex(id)];
-    if (w.owned[who].indexOf(id) >= 0) return false;
-    if (w.coins < price) return false;
-    w.coins -= price;
-    w.owned[who].push(id);
+    if (w.coins < TICKET_COST) return false;
+    w.coins -= TICKET_COST;
+    w.tickets += 1;
     saveState(state);
     return true;
   }
@@ -19487,7 +19488,7 @@ exports.withFuzzing = withFuzzing;
     if (_shopMsg) page.appendChild(el("p", { class: "shop-msg", role: "status", text: _shopMsg }));
     var grid = el("div", { class: "shop-grid" });
     for (var i = 0; i < 10; i++) (function (i) {
-      var id = costumeId(i), own = w.owned[who].indexOf(id) >= 0, price = COSTUME_PRICE[i];
+      var id = costumeId(i), own = w.owned[who].indexOf(id) >= 0;
       var cell = el("div", { class: "shop-cell" + (own ? " is-own" : " is-lock") + (cur === id ? " is-wear" : ""), "data-costume": id });
       cell.appendChild(el("div", { class: "shop-thumb" }, [el("img", { src: costumeArt(who, id), alt: "", draggable: "false", class: own ? "" : "is-silhouette" })]));
       cell.appendChild(el("p", { class: "shop-name", text: own ? costumeName(who, id) : "???" }));
@@ -19495,14 +19496,14 @@ exports.withFuzzing = withFuzzing;
         cell.appendChild(el("button", { class: "btn btn-small shop-act" + (cur === id ? " is-on" : ""), type: "button", disabled: cur === id ? true : null, text: cur === id ? "입는 중" : "입히기",
           onclick: function () { wearCostume(who, id); _shopMsg = costumeName(who, id) + "(으)로 갈아입었다."; render(); } }));
       } else {
-        cell.appendChild(el("button", { class: "btn btn-small shop-act is-buy", type: "button", disabled: w.coins >= price ? null : true, "aria-label": price + "코인으로 사기" },
-          [el("i", { class: "coin-dot", "aria-hidden": "true" }), el("span", { class: "num", text: String(price) })]));
-        cell.lastChild.onclick = function () { if (buyCostume(who, id)) { _shopMsg = costumeName(who, id) + "을(를) 샀다. 입히기를 누르면 바뀐다."; } render(); };
+        cell.appendChild(el("p", { class: "shop-act shop-draw", text: "뽑기로 획득" }));
       }
       grid.appendChild(cell);
     })(i);
     page.appendChild(grid);
-    page.appendChild(el("p", { class: "hub-note", text: "가격: 300 · 500 · 800 코인. 클리어 5판마다 뽑기권 1장. 뽑기는 아직 없는 옷 중에서 하나가 나온다." }));
+    page.appendChild(el("button", { class: "btn btn-secondary review-cta shop-exchange", type: "button", disabled: w.coins >= TICKET_COST ? null : true, text: "코인 " + TICKET_COST + "개로 뽑기권 1장 바꾸기",
+      onclick: function () { if (exchangeTicket()) _shopMsg = "뽑기권 1장을 받았다."; render(); } }));
+    page.appendChild(el("p", { class: "hub-note", text: "코스튬은 뽑기로만 얻는다. 클리어 5판마다 뽑기권 1장, 코인 500개로도 1장 바꿀 수 있다. 뽑기는 아직 없는 옷 중에서 하나가 나온다." }));
     kids.push(page);
     return kids;
   }
@@ -19559,7 +19560,7 @@ exports.withFuzzing = withFuzzing;
     ]));
     page.appendChild(el("h2", { text: "기록" }));
     page.appendChild(el("p", { class: "hub-note", text: "누적 클리어 " + w.clears + "판 · 모은 옷 " + CRAM_CHARS.reduce(function (a, c) { return a + w.owned[c.id].length; }, 0) + "/30벌 · 틀린 카드 " + ((state.cramWrong || []).length + (state.oxWrong || []).length) + "장(어려움에서 다시 나온다)" }));
-    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.35" }));
+    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.36" }));
     return [page];
   }
 
@@ -19626,7 +19627,7 @@ exports.withFuzzing = withFuzzing;
   window.ElecStudyTest.startReigns = startReigns;
   window.ElecStudyTest.OX_ITEMS = OX_ITEMS;
   window.ElecStudyTest.stage = { DIFFS: STAGE_DIFFS, COSTUMES: COSTUMES, PRICE: COSTUME_PRICE, PER: STAGE_PER_GROUP, BASE: STAGE_BASE_FULL,
-    buildStageQueue: buildStageQueue, stageCoins: stageCoins, awardStage: awardStage, ensureWallet: ensureWallet, buyCostume: buyCostume,
+    buildStageQueue: buildStageQueue, stageCoins: stageCoins, awardStage: awardStage, ensureWallet: ensureWallet, exchangeTicket: exchangeTicket, TICKET_COST: TICKET_COST,
     wearCostume: wearCostume, gachaPull: gachaPull, unownedCostumes: unownedCostumes, playUnits: playUnits, unitOf: unitOf,
     playItemFromUnit: playItemFromUnit, openCalcPopup: openCalcPopup, migrateLegacy0735: migrateLegacy0735, CHEER: CHEER };
   window.ElecStudyTest.OX_TALK = OX_TALK;
@@ -19679,7 +19680,7 @@ exports.withFuzzing = withFuzzing;
     var game = false;
     var scene = "";
     var fx = "";
-    /* 0.7.35: 지도·계산기 탭·오답·진도·공식 복습·옛 OX 게임 경로는 게임 홈으로 보낸다 */
+    /* 0.7.36: 지도·계산기 탭·오답·진도·공식 복습·옛 OX 게임 경로는 게임 홈으로 보낸다 */
     if (tab === "지도" || tab === "계산기" || tab === "오답" || tab === "진도") { tab = "복습"; route = { tab: "복습", a: "", b: "" }; }
     if (tab === "복습" && /^(공식|공식세션|OX|OX세션|OX결과|OX지도|OX대화|OX게임오버|개념카드)$/.test(route.a)) route.a = "";
     if (tab === "복습" && route.a === "세션" && state.session && state.session.mode === "formula") { state.session = null; route.a = ""; }
