@@ -2462,6 +2462,10 @@ html.ox-no-scroll main {
 .reigns-play:not(.is-over) .reigns-days-wrap .kicker { margin: 0; }
 .reigns-play:not(.is-over) .reigns-say { margin: 0.25rem 0.5rem 0; font-size: 0.98rem; line-height: 1.35; }
 .reigns-play:not(.is-over) .reigns-swipe-hint { margin: 0.1rem 0 0.15rem; font-size: 0.85rem; }
+
+/* 0.7.32 스프라이트 층 겹침 방지: 얼굴 그림이 있으면 바탕(normal) 층은 자리만 차지하고 보이지 않는다 */
+.ox-sprite-base { visibility: hidden; }
+.ox-ch.is-blink .ox-sprite-face { opacity: 0; }
 </style>
 </head>
 <body>
@@ -17753,7 +17757,7 @@ exports.withFuzzing = withFuzzing;
       stage.appendChild(el("img", { class: "ox-sprite ox-sprite-prev", alt: "", src: prev, draggable: "false" }));
     }
     _oxPrevFace[who] = faceSrc;
-    if (blinkSrc && face !== "happy" && face !== "excited" && face !== "blink") {
+    if (blinkSrc && face === "normal") {
       stage.appendChild(el("img", { class: "ox-sprite ox-sprite-blink", alt: "", src: blinkSrc, draggable: "false" }));
     }
     stage.appendChild(el("span", { class: "ox-ch-glow", "aria-hidden": "true" }));
