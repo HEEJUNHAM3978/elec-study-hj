@@ -2305,6 +2305,42 @@ html.ox-no-scroll main {
 }
 .reigns-choice.is-o { left: 0.5rem; color: #166534; background: #dcfce7; }
 .reigns-choice.is-x { right: 0.5rem; color: #991b1b; background: #fee2e2; }
+/* 0.7.34: 밀 때 크고 밝은 O·X */
+.reigns-choice { font-size: 1.15rem; padding: 0.35rem 0.7rem; border-radius: 0.7rem; box-shadow: 0 0 18px rgba(255,255,255,0.7); transform-origin: center; transition: none; }
+.reigns-choice.is-o { color: #fff; background: #22c55e; box-shadow: 0 0 26px rgba(34,197,94,0.9); }
+.reigns-choice.is-x { color: #fff; background: #ef4444; box-shadow: 0 0 26px rgba(239,68,68,0.9); }
+.reigns-choice.is-big { z-index: 9; top: 0.8rem; width: 6.5rem; height: 6.5rem; max-width: none; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 4.6rem; font-weight: 900; line-height: 1; border: 5px solid #fff; text-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+/* 0.7.34 그림 카드: 위 그림, 아래 왼쪽 캐릭터 + 오른쪽 문제 글, 카드 전체 흰색 */
+.reigns-play .reigns-card, .reigns-play .reigns-card .reigns-portrait, .reigns-play .reigns-card .ox-sprite-stage, .reigns-play .reigns-card .ox-ch { background: #fff !important; background-image: none !important; }
+.reigns-play .reigns-card .ox-sprite-stage::before, .reigns-play .reigns-card .ox-sprite-stage::after, .reigns-play .reigns-card .ox-ch::before, .reigns-play .reigns-card .ox-ch::after { display: none !important; }
+.reigns-play .reigns-card .ox-ch-glow { display: none !important; }
+.reigns-play:not(.is-over) .reigns-card { border: 6px solid #1e293b; border-radius: 1.2rem; box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 5px #cbd5e1, 0 3px 0 #0f172a, 0 10px 18px rgba(0,0,0,0.45), 0 22px 40px rgba(0,0,0,0.35); }
+.reigns-play:not(.is-over) .reigns-card.is-dragging { box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 5px #cbd5e1, 0 6px 0 #0f172a, 0 18px 28px rgba(0,0,0,0.5), 0 34px 60px rgba(0,0,0,0.4); }
+.reigns-play:not(.is-over) .reigns-stage { overflow: visible; padding-bottom: 0.6rem; }
+.reigns-imp { position: absolute; top: 0.45rem; right: 0.5rem; z-index: 8; padding: 0.15rem 0.55rem; border-radius: 999px; font-size: 0.85rem; font-weight: 850; color: #fff; background: #64748b; box-shadow: 0 2px 0 rgba(0,0,0,0.25); pointer-events: none; }
+.reigns-imp.imp-2 { background: #f59e0b; }
+.reigns-imp.imp-3 { background: #dc2626; }
+.reigns-card.is-dragging .reigns-imp { opacity: 0.35; }
+.reigns-g { position: relative; }
+.reigns-g-label { display: flex; justify-content: center; align-items: baseline; gap: 0.25rem; }
+.reigns-g-num { font-size: 0.95rem; font-weight: 900; color: #fff; }
+.reigns-g.is-low .reigns-g-num { color: #f87171; }
+.reigns-g.is-hot .reigns-g-num { color: #4ade80; }
+.reigns-g-delta { position: absolute; top: -0.35rem; right: 0.1rem; font-size: 0.95rem; font-weight: 900; animation: reigns-delta 1.2s ease-out both; pointer-events: none; }
+.reigns-g-delta.is-up { color: #4ade80; }
+.reigns-g-delta.is-down { color: #f87171; }
+@keyframes reigns-delta { 0% { transform: translateY(6px) scale(0.6); opacity: 0; } 25% { transform: translateY(0) scale(1.25); opacity: 1; } 100% { transform: translateY(-4px) scale(1); opacity: 1; } }
+.reigns-days-wrap .reigns-score { color: #fde68a; }
+.reigns-heal { position: absolute; top: 0.45rem; left: 0.5rem; z-index: 8; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.85rem; font-weight: 850; color: #fff; background: #16a34a; box-shadow: 0 0 12px rgba(34,197,94,0.8); pointer-events: none; animation: reigns-heal-pulse 1.4s ease-in-out infinite; }
+@keyframes reigns-heal-pulse { 50% { transform: scale(1.08); box-shadow: 0 0 20px rgba(34,197,94,1); } }
+.reigns-play:not(.is-over) .reigns-card.is-heal { border-color: #16a34a; }
+.reigns-card.is-dragging .reigns-heal { opacity: 0.35; }
+.reigns-card .reigns-talk-row { display: contents; }
+.reigns-card.has-fig:not(.is-rev) .reigns-talk-row { display: flex; order: 1; flex: 0 0 auto; align-items: center; gap: 0.5rem; width: 100%; }
+.reigns-card.has-fig:not(.is-rev) .reigns-talk-row .reigns-portrait { order: 0; flex: 0 0 38%; justify-content: center; }
+.reigns-card.has-fig:not(.is-rev) .reigns-talk-row .reigns-portrait .ox-ch, .reigns-card.has-fig:not(.is-rev) .reigns-talk-row .reigns-portrait .ox-sprite-stage { width: 100%; }
+.reigns-q-side { flex: 1 1 0; margin: 0; font-size: 1.08rem; font-weight: 700; line-height: 1.45; color: #1f2937; word-break: keep-all; }
+.reigns-swipe-hint.is-empty { min-height: 0.4rem; padding-bottom: env(safe-area-inset-bottom, 0px); }
 .reigns-say {
   margin: 0.45rem 0 0.15rem;
   font-size: 1.02rem;
@@ -18259,7 +18295,13 @@ exports.withFuzzing = withFuzzing;
     var g = s.gauges || (s.gauges = {});
     if (g.cc != null) { if (g.ci == null) g.ci = g.cc; if (g.co == null) g.co = g.cc; delete g.cc; }
     if (g.me != null) { if (g.em == null) g.em = g.me; if (g.ma == null) g.ma = g.me; delete g.me; }
-    REIGNS_GROUPS.forEach(function (x) { if (g[x.id] == null) g[x.id] = 50; });
+    REIGNS_GROUPS.forEach(function (x) { if (g[x.id] == null) g[x.id] = 5; });
+    /* 0.7.34: 게이지를 0~100에서 0~10 숫자로 바꾼다 */
+    if (!s.g10) {
+      REIGNS_GROUPS.forEach(function (x) { g[x.id] = Math.max(1, Math.min(10, Math.round(g[x.id] / 10))); });
+      s.g10 = true;
+    }
+    if (s.score == null) s.score = 0;
   }
   if (!state.cramWrong) state.cramWrong = [];
   if (!state.cramView) state.cramView = null;
@@ -18809,7 +18851,7 @@ exports.withFuzzing = withFuzzing;
 
   function defaultGauges() {
     var g = {};
-    REIGNS_GROUPS.forEach(function (x) { g[x.id] = 50; });
+    REIGNS_GROUPS.forEach(function (x) { g[x.id] = 5; });
     return g;
   }
   function playFigKind(item) {
@@ -18896,6 +18938,8 @@ exports.withFuzzing = withFuzzing;
   function startReigns() {
     state.reigns = {
       gauges: defaultGauges(),
+      g10: true,
+      score: 0,
       days: 0,
       best: (state.reigns && state.reigns.best) || 0,
       queue: buildReignsQueue().map(function (it) { return it.id; }),
@@ -18956,6 +19000,8 @@ exports.withFuzzing = withFuzzing;
     s.who = pickCramWho(s.index);
     s.talk = null;
     s.face = "normal";
+    /* 0.7.34: 가끔(약 15%) 맞히면 게이지가 회복되는 문제 */
+    s.heal = Math.random() < 0.15;
     ensureReignsQueue(s);
     saveState(state);
     render();
@@ -18974,11 +19020,28 @@ exports.withFuzzing = withFuzzing;
     s.revealed = true;
     s.lastOk = ok;
     var g = groupOfSubject(item.subject);
-    var cur = s.gauges[g.id] == null ? 50 : s.gauges[g.id];
-    var delta = ok ? 8 : -12;
-    var next = Math.max(0, Math.min(100, cur + delta));
-    if (ok && cur < 100 && next >= 100) {
-      next = 100;
+    var cur = s.gauges[g.id] == null ? 5 : s.gauges[g.id];
+    /* 0.7.34: 맞히면 유지, 틀리면 −1, 회복 문제를 맞히면 +1 */
+    var healGid = null;
+    if (ok && s.heal) {
+      healGid = g.id;
+      if (cur >= 10) {
+        REIGNS_GROUPS.forEach(function (x) { var v = s.gauges[x.id] == null ? 5 : s.gauges[x.id]; if (v < 10 && (healGid === g.id || v < s.gauges[healGid])) healGid = x.id; });
+      }
+    }
+    if (healGid && healGid !== g.id) {
+      s.gauges[healGid] = Math.min(10, (s.gauges[healGid] == null ? 5 : s.gauges[healGid]) + 1);
+      g = REIGNS_GROUPS.filter(function (x) { return x.id === healGid; })[0] || g;
+      cur = s.gauges[healGid] - 1;
+    }
+    var delta = ok ? (healGid ? 1 : 0) : -1;
+    var next = Math.max(0, Math.min(10, cur + delta));
+    s.lastGid = g.id;
+    s.lastHeal = !!healGid;
+    s.lastPts = ok ? itemImportance(item) : 0;
+    s.score = (s.score || 0) + s.lastPts;
+    if (ok && cur < 10 && next >= 10) {
+      next = 10;
       s.days += 2;
       if (s.days > (s.best || 0)) s.best = s.days;
     }
@@ -19022,19 +19085,33 @@ exports.withFuzzing = withFuzzing;
     render();
   }
 
+  /* 0.7.34 문제별 중요도 점수: 핵심 정리 카드 3점, 수치 암기 2점, 일반 OX 1점 */
+  function itemImportance(item) {
+    if (!item) return 1;
+    if (item.imp) return item.imp;
+    if (item.kind === "cram") return 3;
+    if (item.kind === "blank") return 2;
+    return 1;
+  }
   function reignsGaugesEl(s, hintId, strength) {
     var row = el("div", { class: "reigns-gauges", "aria-label": "과목 게이지" });
     REIGNS_GROUPS.forEach(function (g) {
-      var v = s.gauges[g.id] == null ? 50 : s.gauges[g.id];
-      var tone = v <= 20 ? "is-low" : v >= 85 ? "is-hot" : (v <= 40 ? "is-mid" : "");
+      var v = s.gauges[g.id] == null ? 5 : s.gauges[g.id];
+      var tone = v <= 2 ? "is-low" : v >= 9 ? "is-hot" : (v <= 4 ? "is-mid" : "");
       var cell = el("div", { class: "reigns-g " + tone, "data-gid": g.id });
       var icon = el("div", { class: "reigns-g-icon" });
       icon.innerHTML = gaugeIcon(g.icon);
       cell.appendChild(icon);
-      cell.appendChild(el("div", { class: "reigns-g-label", text: g.label }));
+      cell.appendChild(el("div", { class: "reigns-g-label" }, [
+        el("span", { text: g.label }),
+        el("b", { class: "reigns-g-num", text: String(v) })
+      ]));
+      if (s.revealed && s.lastGid === g.id && s.lastDelta) {
+        cell.appendChild(el("span", { class: "reigns-g-delta " + (s.lastDelta > 0 ? "is-up" : "is-down"), text: (s.lastDelta > 0 ? "+" : "−") + Math.abs(s.lastDelta) }));
+      }
       var track = el("div", { class: "reigns-g-track" });
       var fill = el("div", { class: "reigns-g-fill" });
-      fill.style.width = v + "%";
+      fill.style.width = (v * 10) + "%";
       track.appendChild(fill);
       cell.appendChild(track);
       var dot = el("span", { class: "reigns-g-dot" + (hintId === g.id ? " is-hint" : "") });
@@ -19105,16 +19182,26 @@ exports.withFuzzing = withFuzzing;
     var hintG = groupOfSubject(item.subject).id;
     play.appendChild(reignsGaugesEl(s, s._hintG, s._hintA));
     var card = el("div", { class: "reigns-card" + (s.revealed ? " is-flip is-rev" : ""), id: "reigns-card" });
-    var leftLabel = item.type === "choice" ? item.left : "거짓이다";
-    var rightLabel = item.type === "choice" ? item.right : "참이다";
-    card.appendChild(el("span", { class: "reigns-choice is-x", html: leftLabel }));
-    card.appendChild(el("span", { class: "reigns-choice is-o", html: rightLabel }));
+    var isCh = item.type === "choice";
+    var leftLabel = isCh ? item.left : "X";
+    var rightLabel = isCh ? item.right : "O";
+    card.appendChild(el("span", { class: "reigns-choice is-x" + (isCh ? "" : " is-big"), html: leftLabel }));
+    card.appendChild(el("span", { class: "reigns-choice is-o" + (isCh ? "" : " is-big"), html: rightLabel }));
+    var imp = itemImportance(item);
+    if (s.heal && !s.revealed) card.appendChild(el("span", { class: "reigns-heal", text: "회복 문제 +1" }));
+    card.classList.toggle("is-heal", !!s.heal);
+    card.appendChild(el("span", { class: "reigns-imp imp-" + imp, "aria-label": "중요도 " + imp + "점", text: imp + "점" }));
     var port = el("div", { class: "reigns-portrait" });
     port.appendChild(sprite(who, face, { name: false, speak: !s.revealed }));
-    card.appendChild(port);
+    var talkRow = el("div", { class: "reigns-talk-row" });
+    talkRow.appendChild(port);
+    card.appendChild(talkRow);
     var fig = renderCramFig(item.fig, item.title, s.revealed ? null : lkTokens({ q: item.q + (item.type === "choice" ? " " + (item.left || "") + " " + (item.right || "") : ""), explain: item.explain, title: item.kind === "cram" ? item.title : "" }));
     card.classList.add(fig ? "has-fig" : "no-fig");
-    if (fig) { fitFigBox(fig); card.appendChild(fig); }
+    if (fig) {
+      fitFigBox(fig); card.appendChild(fig);
+      if (!s.revealed) talkRow.appendChild(el("p", { class: "reigns-q-side", html: item.q || item.title }));
+    }
     else if (!s.revealed) {
       card.appendChild(el("p", { class: "reigns-q-big", html: item.q || item.title }));
     }
@@ -19130,24 +19217,18 @@ exports.withFuzzing = withFuzzing;
     play.appendChild(stage);
     var q = item.q || item.title;
     var say = s.talk && s.revealed ? s.talk : q;
-    if (fig || s.revealed) play.appendChild(el("p", { class: "reigns-say" }, [
+    if (s.revealed) play.appendChild(el("p", { class: "reigns-say" }, [
       el("span", { html: say })
     ]));
     play.appendChild(el("div", { class: "reigns-days-wrap" }, [
       el("p", { class: "kicker", text: "버틴 날 수" }),
-      el("p", { class: "num", text: String(s.days || 0) + "일" })
+      el("p", { class: "num", text: String(s.days || 0) + "일" }),
+      el("p", { class: "kicker", text: "점수" }),
+      el("p", { class: "num reigns-score", text: String(s.score || 0) + (s.revealed && s.lastPts ? " (+" + s.lastPts + ")" : "") })
     ]));
     var dock = el("div", { class: "review-dock reigns-dock ox-dock" });
     if (!s.revealed) {
-      dock = el("p", { class: "reigns-swipe-hint", "aria-live": "polite" });
-      if (item.type === "choice") {
-        dock.appendChild(el("span", { class: "hint-title", text: "밀어서 답하기" }));
-        dock.appendChild(el("span", { class: "hint-side", html: "왼쪽: " + item.left }));
-        dock.appendChild(el("span", { class: "hint-side", html: "오른쪽: " + item.right }));
-      } else {
-        dock.appendChild(el("span", { class: "hint-title", text: "밀어서 답하기" }));
-        dock.appendChild(el("span", { class: "hint-side", text: "왼쪽 X · 오른쪽 O" }));
-      }
+      dock = el("p", { class: "reigns-swipe-hint is-empty", "aria-hidden": "true" });
     } else if (s.over) {
       dock.appendChild(el("button", { class: "btn", type: "button", text: "결과 보기", onclick: function () { go("복습", "개념카드오버"); } }));
     } else {
@@ -19165,6 +19246,8 @@ exports.withFuzzing = withFuzzing;
           var x = card.querySelector(".reigns-choice.is-x");
           if (o) o.style.opacity = dx > 8 ? String(a) : "0";
           if (x) x.style.opacity = dx < -8 ? String(a) : "0";
+          if (o) o.style.transform = "scale(" + (dx > 8 ? 0.6 + 0.5 * a : 0.6) + ")";
+          if (x) x.style.transform = "scale(" + (dx < -8 ? 0.6 + 0.5 * a : 0.6) + ")";
           var dot = play.querySelector('.reigns-g[data-gid="' + hintG + '"] .reigns-g-dot');
           if (dot) {
             dot.classList.add("is-hint");
@@ -19290,6 +19373,8 @@ exports.withFuzzing = withFuzzing;
       var x = card.querySelector(".reigns-choice.is-x");
       if (o) o.style.opacity = dx > 8 ? String(a) : "0";
       if (x) x.style.opacity = dx < -8 ? String(a) : "0";
+      if (o) o.style.transform = "scale(" + (dx > 8 ? 0.6 + 0.5 * a : 0.6) + ")";
+      if (x) x.style.transform = "scale(" + (dx < -8 ? 0.6 + 0.5 * a : 0.6) + ")";
       var itemId = state.reigns && state.reigns.queue[state.reigns.index];
       var item = lookupPlayItem(itemId);
       if (item) {
