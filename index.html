@@ -2847,6 +2847,39 @@ html[data-bg]:not([data-bg="b01"]) .app-shell.is-game .ox-scene-art::after { bac
 .cd-stat-val { grid-area: v; font-size: 1rem; color: #0f2a4a; }
 .cd-stat-lv { grid-area: l; font-size: 0.78rem; color: #64748b; }
 .cd-up { grid-area: b; width: 100%; }
+
+/* 0.7.50 무한 모드(랭킹) · 닉네임 · 온라인 랭킹 */
+.start-choice.is-inf { background: linear-gradient(135deg, #b91c1c, #7c2d12) !important; color: #fff !important; border-color: transparent !important; }
+.start-choice.is-rank { background: linear-gradient(135deg, #0f766e, #1d4ed8) !important; color: #fff !important; border-color: transparent !important; }
+.diff-pill.diff-inf { background: linear-gradient(135deg, #dc2626, #9a3412); color: #fff; }
+.inf-hp { position: relative; display: flex; align-items: center; gap: 0.5rem; margin: 0 0.35rem 0.4rem; padding: 0.35rem 0.6rem; border-radius: 12px; background: rgba(15, 23, 42, 0.72); color: #fff; }
+.inf-hp-label { font-weight: 900; font-size: 0.9rem; white-space: nowrap; }
+.inf-hp-track { flex: 1 1 auto; height: 0.75rem; border-radius: 99px; background: rgba(255,255,255,0.18); overflow: hidden; }
+.inf-hp-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #22c55e, #84cc16); transition: width 0.35s ease; }
+.inf-hp.is-low .inf-hp-fill { background: linear-gradient(90deg, #ef4444, #f97316); }
+.inf-hp.is-mid .inf-hp-fill { background: linear-gradient(90deg, #f59e0b, #facc15); }
+.inf-hp-num { font-weight: 900; min-width: 2.6rem; text-align: right; }
+.inf-hp-dmg { font-size: 0.72rem; opacity: 0.85; white-space: nowrap; }
+.inf-hp .reigns-g-delta { position: absolute; right: 0.6rem; top: -0.6rem; }
+.inf-stageup { margin: 0 0.35rem 0.35rem; padding: 0.3rem 0.6rem; border-radius: 10px; background: #fde68a; color: #7c2d12; font-weight: 900; text-align: center; font-size: 0.9rem; }
+.inf-hub .inf-rules { margin: 0.4rem 0 0.8rem; padding: 0.7rem 0.9rem 0.7rem 1.6rem; border-radius: 12px; background: #fff; border: 1.5px solid #e2e8f0; line-height: 1.55; font-size: 0.9rem; }
+.inf-hub .inf-best { font-size: 1.05rem; font-weight: 800; margin: 0.2rem 0 0.6rem; }
+.inf-up-msg { text-align: center; font-size: 0.88rem; color: #e2e8f0; margin: 0.2rem 0 0.4rem; }
+.rank-page .rank-msg { padding: 0.8rem 1rem; border-radius: 12px; background: #fff7ed; border: 1.5px solid #fed7aa; color: #9a3412; font-weight: 700; }
+.rank-me { padding: 0.7rem 1rem; border-radius: 12px; background: #eef2ff; border: 1.5px solid #c7d2fe; font-weight: 800; margin: 0.4rem 0 0.7rem; }
+.rank-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+.rank-row { display: grid; grid-template-columns: 2.6rem 1fr auto; align-items: center; gap: 0.4rem; padding: 0.5rem 0.8rem; border-radius: 10px; background: #fff; border: 1px solid #e2e8f0; }
+.rank-row.is-me { border-color: #6366f1; background: #eef2ff; }
+.rank-row .rank-no { font-weight: 900; color: #475569; }
+.rank-row.top-1 .rank-no { color: #ca8a04; } .rank-row.top-2 .rank-no { color: #64748b; } .rank-row.top-3 .rank-no { color: #b45309; }
+.rank-row .rank-nick { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-row .rank-val { font-weight: 900; }
+.nick-box { margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px dashed #cbd5e1; }
+.nick-row { display: flex; gap: 0.4rem; align-items: center; }
+.nick-row .sync-in { flex: 1 1 auto; min-width: 0; }
+.nick-row .btn { flex: 0 0 auto !important; width: auto !important; margin: 0 !important; padding-left: 0.9rem; padding-right: 0.9rem; }
+.nick-msg { font-size: 0.85rem; margin: 0.3rem 0 0; color: #334155; }
+.nick-msg.is-bad { color: #b91c1c; }
 </style>
 </head>
 <body>
@@ -14283,8 +14316,8 @@ exports.withFuzzing = withFuzzing;
   }
   function syncBase() { return String(syncMeta().url || SYNC_DEFAULT_URL).replace(/\/+$/, ""); }
   /* 계정 API (주소·본문 형식은 서버가 정해지면 맞춘다) */
-  function authCall(path, body, tok) {
-    var opt = { method: body ? "POST" : "GET", headers: {}, cache: "no-store" };
+  function authCall(path, body, tok, method) {
+    var opt = { method: method || (body ? "POST" : "GET"), headers: {}, cache: "no-store" };
     if (body) { opt.headers["Content-Type"] = "application/json"; opt.body = JSON.stringify(body); }
     if (tok) opt.headers["Authorization"] = "Bearer " + tok;
     return fetch(syncBase() + path, opt).then(function (res) { return res.json().catch(function () { return {}; }).then(function (j) { return { ok: res.ok, status: res.status, j: j || {}, retry: Number(res.headers.get("Retry-After")) || 0 }; }); });
@@ -14404,6 +14437,132 @@ exports.withFuzzing = withFuzzing;
   document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden" && syncMeta().dirty) syncPush(true); });
   window.addEventListener("online", function () { if (syncMeta().dirty) syncSchedule(1000); });
   setTimeout(function () { syncNow(); }, 600);
+  /* ===== 0.7.50 닉네임 · 온라인 랭킹 (무한 모드 최고 점수) =====
+     서버 주소는 여기 한 곳만 바꾸면 된다. 서버가 없거나(404) 오류면 '랭킹 준비 중'만 보이고, 닉네임·점수는 기기에 두었다가 다시 올린다 */
+  var RANK_API = { profile: "/profile", me: "/me", score: "/score", ranking: "/ranking", board: "infinite", limit: 50 };
+  var SOCIAL_KEY = "elecStudy.social";
+  var NICK_RE = /^[가-힣A-Za-z0-9]{2,12}$/;
+  function socialMeta() { var m = null; try { m = JSON.parse(localStorage.getItem(SOCIAL_KEY) || "null"); } catch (e) {} return m && typeof m === "object" ? m : {}; }
+  function socialSave(m) { try { localStorage.setItem(SOCIAL_KEY, JSON.stringify(m)); } catch (e) {} }
+  function nickCheck(v) {
+    v = String(v == null ? "" : v);
+    if (!v.length) return "닉네임을 입력해 주세요.";
+    if (/\s/.test(v)) return "공백은 쓸 수 없어요.";
+    if (v.length < 2 || v.length > 12) return "닉네임은 2~12자로 해 주세요.";
+    if (!NICK_RE.test(v)) return "한글·영문·숫자만 쓸 수 있어요(특수문자 안 됨).";
+    return "";
+  }
+  function myNick() { return socialMeta().nick || ""; }
+  var _socialBusy = null;
+  /* 서버에 닉네임·최고 점수를 올린다. 결과: { state: "ok" | "nologin" | "nonick" | "notready" | "taken", msg } */
+  function socialFlush() {
+    if (_socialBusy) return _socialBusy;
+    var tok = syncToken();
+    if (!tok) return Promise.resolve({ state: "nologin" });
+    var m = socialMeta();
+    var p = Promise.resolve({ state: "ok" });
+    if (!m.nick) {
+      p = authCall(RANK_API.me, null, tok).then(function (r) {
+        var sn = r.ok && r.j && r.j.nick;
+        if (sn && !nickCheck(sn)) { var m2 = socialMeta(); m2.nick = sn; m2.nickDirty = false; socialSave(m2); return { state: "ok" }; }
+        return { state: r.ok ? "nonick" : "notready" };
+      });
+    } else if (m.nickDirty) {
+      p = authCall(RANK_API.profile, { nick: m.nick }, tok, "PUT").then(function (r) {
+        var m2 = socialMeta();
+        if (r.ok) { m2.nickDirty = false; m2.nickErr = ""; socialSave(m2); return { state: "ok" }; }
+        if (r.status === 409) { m2.nickErr = "taken"; socialSave(m2); return { state: "taken", msg: "이미 쓰는 닉네임이에요. 다른 닉네임으로 바꿔 주세요." }; }
+        return { state: "notready" };
+      });
+    }
+    _socialBusy = p.then(function (st) {
+      if (st.state !== "ok") return st;
+      var m3 = socialMeta();
+      if (!m3.nick) return { state: "nonick" };
+      if (m3.nickDirty) return { state: "notready" };
+      var best = infBestScore();
+      if (!(best > 0) || (m3.sentScore || 0) >= best) return { state: "ok" };
+      return authCall(RANK_API.score, { board: RANK_API.board, value: best }, tok).then(function (r) {
+        if (r.ok) { var m4 = socialMeta(); m4.sentScore = best; socialSave(m4); return { state: "ok" }; }
+        return { state: "notready" };
+      });
+    }).catch(function () { return { state: "notready" }; }).then(function (st) { _socialBusy = null; return st; });
+    return _socialBusy;
+  }
+  function socialFlushQuiet() { try { socialFlush(); } catch (e) {} }
+  function setNick(v) {
+    var err = nickCheck(v);
+    if (err) return Promise.resolve({ ok: false, msg: err });
+    var m = socialMeta();
+    if (m.nick !== v || m.nickErr) { m.nick = v; m.nickDirty = true; m.nickErr = ""; m.sentScore = 0; socialSave(m); }
+    if (!syncToken()) return Promise.resolve({ ok: true, msg: "이 기기에 저장했어요. 로그인하면 서버에도 저장돼요." });
+    return socialFlush().then(function (st) {
+      if (st.state === "taken") return { ok: false, msg: st.msg };
+      if (st.state === "notready") return { ok: true, msg: "이 기기에 저장했어요. 랭킹 서버가 준비되면 자동으로 올라가요." };
+      return { ok: true, msg: "닉네임을 저장했어요." };
+    });
+  }
+  var _nickMsg = "", _nickBad = false;
+  function nickSection() {
+    var m = socialMeta();
+    var input = el("input", { class: "sync-in nick-in", type: "text", name: "nickname", maxlength: "12", autocomplete: "off", spellcheck: "false", placeholder: "닉네임 (2~12자, 한글·영문·숫자)", value: m.nick || "" });
+    var msg = el("p", { class: "nick-msg" + (_nickBad ? " is-bad" : ""), role: "status", text: _nickMsg || (m.nickErr === "taken" ? "이미 쓰는 닉네임이에요. 다른 닉네임으로 바꿔 주세요." : m.nick ? (m.nickDirty ? "기기에 저장됨 · 서버에 아직 안 올라감" : "랭킹에 이 닉네임으로 나와요.") : "랭킹에 보일 이름이에요.") });
+    if (m.nickErr === "taken" && !_nickMsg) msg.classList.add("is-bad");
+    var btn = el("button", { class: "btn nick-save", type: "button", text: "저장", onclick: function () {
+      var v = input.value;
+      btn.disabled = true;
+      setNick(v).then(function (r) { _nickMsg = r.msg; _nickBad = !r.ok; btn.disabled = false; render(); });
+    } });
+    return el("div", { class: "nick-box" }, [el("p", { class: "sync-l" }, [el("span", { text: "닉네임" })]), el("div", { class: "nick-row" }, [input, btn]), msg]);
+  }
+  var _rank = null;   /* { loading, state, list, me, at } */
+  function loadRanking() {
+    var tok = syncToken();
+    if (!tok) { _rank = { state: "nologin" }; render(); return; }
+    _rank = { loading: true };
+    socialFlush().then(function () {
+      return authCall(RANK_API.ranking + "?board=" + encodeURIComponent(RANK_API.board) + "&limit=" + RANK_API.limit, null, tok);
+    }).then(function (r) {
+      if (r.ok && r.j && Array.isArray(r.j.list)) _rank = { state: "ok", list: r.j.list.slice(0, RANK_API.limit), me: r.j.me || null, at: Date.now() };
+      else _rank = { state: r.status === 401 ? "auth" : "notready" };
+    }).catch(function () { _rank = { state: "notready" }; }).then(function () { if (/랭킹/.test(decodeURIComponent(location.hash || ""))) render(); });
+  }
+  function viewRanking() {
+    var page = el("div", { class: "settings rank-page" });
+    page.appendChild(backBtn("게임 시작", function () { go("복습"); }));
+    page.appendChild(el("h1", { text: "무한 모드 랭킹" }));
+    page.appendChild(el("p", { class: "hub-note", text: "무한 모드 최고 점수로 순위를 매긴다. 상위 " + RANK_API.limit + "명까지 보여 준다." }));
+    var best = infBestScore(), nick = myNick();
+    page.appendChild(el("p", { class: "rank-me" }, [el("span", { text: "내 기록: " + best + "점 · 최고 " + infBest().bestStage + "스테이지" + (nick ? " · " + nick : " · 닉네임 없음") })]));
+    if (!_rank || (!_rank.loading && _rank.at && Date.now() - _rank.at > 30000)) { _rank = { loading: true }; setTimeout(loadRanking, 0); }
+    var R = _rank;
+    if (R.loading) page.appendChild(el("p", { class: "rank-msg is-loading", role: "status", text: "랭킹을 불러오는 중…" }));
+    else if (R.state === "nologin") {
+      page.appendChild(el("p", { class: "rank-msg", role: "status", text: "로그인하면 온라인 랭킹을 볼 수 있어요. 기록은 이 기기에 저장돼 있어요." }));
+      page.appendChild(el("button", { class: "btn review-cta", type: "button", text: "로그인", onclick: function () { _authMsg = ""; go("설정", "로그인"); } }));
+    } else if (R.state === "auth") {
+      page.appendChild(el("p", { class: "rank-msg", role: "status", text: "로그인이 만료됐어요. 다시 로그인해 주세요." }));
+    } else if (R.state !== "ok") {
+      page.appendChild(el("p", { class: "rank-msg is-notready", role: "status", text: "랭킹 준비 중이에요. 서버가 열리면 내 최고 점수가 자동으로 올라가요." }));
+    } else {
+      if (!nick) page.appendChild(el("p", { class: "rank-msg", text: "닉네임을 정하면 랭킹에 올라가요. (설정 → 닉네임)" }));
+      if (R.me && R.me.rank) page.appendChild(el("p", { class: "rank-me is-server" }, [el("span", { text: "내 순위: " + R.me.rank + "위 · " + (R.me.value || 0) + "점" })]));
+      var ul = el("ol", { class: "rank-list" });
+      if (!R.list.length) ul.appendChild(el("li", { class: "rank-row", text: "아직 기록이 없어요. 첫 기록을 남겨 보자!" }));
+      R.list.forEach(function (x, i) {
+        var rk = x.rank || i + 1, me = nick && x.nick === nick;
+        ul.appendChild(el("li", { class: "rank-row" + (me ? " is-me" : "") + (rk <= 3 ? " top-" + rk : "") }, [
+          el("span", { class: "rank-no num", text: rk + "위" }), el("span", { class: "rank-nick", text: String(x.nick || "?") }), el("span", { class: "rank-val num", text: (x.value || 0) + "점" })
+        ]));
+      });
+      page.appendChild(ul);
+    }
+    page.appendChild(el("div", { class: "result-btns" }, [
+      el("button", { class: "btn btn-secondary review-cta", type: "button", text: "새로고침", onclick: function () { _rank = null; render(); } }),
+      el("button", { class: "btn review-cta", type: "button", text: "무한 모드 하러 가기", onclick: function () { go("복습", "무한도전"); } })
+    ]));
+    return [page];
+  }
   function syncSection() {
     var v = syncSession();
     var kids = [el("p", { class: "hub-note", text: "아이디로 로그인하면 기록이 계정에 저장되고 다른 기기에서도 이어진다. 로그인하지 않아도 이 기기 저장만으로 그대로 쓸 수 있다. 비밀번호는 기기에 저장하지 않는다." })];
@@ -14420,6 +14579,7 @@ exports.withFuzzing = withFuzzing;
         el("button", { class: "btn btn-secondary", type: "button", text: "회원가입", onclick: function () { _authMsg = ""; go("설정", "회원가입"); } })
       ]));
     }
+    kids.push(nickSection());
     return el("div", { class: "sync-box" }, kids);
   }
   var _authMsg = "", _pendingUser = "";
@@ -19044,6 +19204,7 @@ exports.withFuzzing = withFuzzing;
   function awardStage(s, win) {
     if (!s || s.awarded) return;
     if (s.mode === "endless") { awardEndless(s); return; }
+    if (s.mode === "infinite") { awardInf(s); return; }
     var w = ensureWallet();
     var r = stageCoins(s, win);
     w.coins += r.coins;
@@ -19056,7 +19217,7 @@ exports.withFuzzing = withFuzzing;
     s.result = r;
     s.awarded = true;
   }
-  function stageTotal(s) { if (s && s.mode === "endless") return Infinity; return s.total || ((s.groups || []).length || 6) * STAGE_PER_GROUP; }
+  function stageTotal(s) { if (s && (s.mode === "endless" || s.mode === "infinite")) return Infinity; return s.total || ((s.groups || []).length || 6) * STAGE_PER_GROUP; }
 
   /* ---- 0.7.43 캐릭터 뽑기 · 도감 · 캐릭터 능력치 · 상황별 표정과 대사 ---- */
   var VT = (DATA.vt && DATA.vt.chars) || {};
@@ -19390,7 +19551,7 @@ exports.withFuzzing = withFuzzing;
     ]));
     var box = el("div", { class: "main-btns" });
     [["게임 시작", function () { go("복습"); }, "is-start"], ["수집품", function () { go("수집품"); }, ""], ["설정", function () { go("설정"); }, ""],
-     ["캐릭터", function () { _charMsg = ""; go("수집품", "도감"); }, "is-char"]].forEach(function (b) {
+     ["캐릭터", function () { _charMsg = ""; go("수집품", "도감"); }, "is-char"], ["무한 모드 랭킹", function () { _rank = null; go("복습", "랭킹"); }, "is-rank"]].forEach(function (b) {
       box.appendChild(el("button", { class: "btn main-btn " + b[2], type: "button", text: b[0], onclick: b[1] }));
     });
     page.appendChild(box);
@@ -19413,15 +19574,22 @@ exports.withFuzzing = withFuzzing;
     box.appendChild(el("button", { class: "btn start-choice is-stage", type: "button", onclick: function () { go("복습", "스테이지"); } }, [
       el("b", { text: "스테이지" }), el("span", { text: "난이도와 과목을 고르고 과목마다 10장. 클리어 5판마다 뽑기권." })
     ]));
+    var IB = infBest();
+    box.appendChild(el("button", { class: "btn start-choice is-inf", type: "button", onclick: function () { go("복습", "무한도전"); } }, [
+      el("b", { text: "무한 모드" }), el("span", { text: "6과목 전체 · 체력 하나 · 갈수록 어려워진다. 최고 " + IB.best + "점 · " + IB.bestStage + "스테이지" })
+    ]));
+    box.appendChild(el("button", { class: "btn start-choice is-rank", type: "button", onclick: function () { _rank = null; go("복습", "랭킹"); } }, [
+      el("b", { text: "온라인 랭킹" }), el("span", { text: "무한 모드 최고 점수 순위 · 상위 50명" })
+    ]));
     box.appendChild(el("button", { class: "btn start-choice is-endless", type: "button", onclick: function () { go("복습", "무한"); } }, [
-      el("b", { text: "무한 모드" }), el("span", { text: "게이지가 0이 될 때까지. 최고 " + w.endless.best + "라운드 · " + w.endless.bestScore + "점" })
+      el("b", { text: "무한 연습" }), el("span", { text: "고른 과목 · 게이지 6개가 0이 될 때까지. 최고 " + w.endless.best + "라운드 · " + w.endless.bestScore + "점" })
     ]));
     page.appendChild(box);
     var s = state.reigns;
     if (s && s.queue && !s.over && !s.cleared && s.index < stageTotal(s)) {
       page.appendChild(el("button", { class: "btn btn-secondary review-cta stage-resume", type: "button", onclick: function () { go("복습", "개념카드세션"); } }, [
         el("span", { text: "이어하기" }),
-        el("span", { class: "review-cta-sub", text: s.mode === "endless" ? "무한 모드 · 라운드 " + (s.index + 1) : "라운드 " + (s.index + 1) + "/" + stageTotal(s) })
+        el("span", { class: "review-cta-sub", text: s.mode === "infinite" ? "무한 모드 · " + infStage(s.index) + "스테이지 · 체력 " + s.hp : s.mode === "endless" ? "무한 연습 · 라운드 " + (s.index + 1) : "라운드 " + (s.index + 1) + "/" + stageTotal(s) })
       ]));
     }
     return [page];
@@ -19655,6 +19823,191 @@ exports.withFuzzing = withFuzzing;
     ]));
     return [play];
   }
+  /* ===== 0.7.50 무한 모드(랭킹): 체력 하나 · 6과목 전체 · 10문제마다 스테이지 +1 · 시간제한 없음 =====
+     체력 10(강화·캐릭터 능력치 미적용, 랭킹 공정성). 오답 피해 = 2 + 스테이지(최대 10). 회복 문제 6% · +1.
+     점수 = 중요도 점수 × (1 + 0.25 × (스테이지 − 1)) 반올림. 스테이지가 오를수록 계산 기출·고중요도·X 버전 비율 증가 */
+  var INF = { hp: 10, perStage: 10, healP: 0.06, heal: 1, coinCap: 300 };
+  function infStage(idx) { return Math.floor((idx || 0) / INF.perStage) + 1; }
+  function infDmg(stage) { return Math.min(INF.hp, 2 + stage); }
+  function infMult(stage) { return 1 + 0.25 * (stage - 1); }
+  function infHardP(stage) { return Math.min(0.85, 0.15 + 0.1 * (stage - 1)); }
+  function infXP(stage) { return Math.min(0.8, 0.5 + 0.05 * (stage - 1)); }
+  function infBest() {
+    var w = ensureWallet(), b = w.inf;
+    if (!b || typeof b !== "object") b = w.inf = {};
+    ["best", "bestStage", "runs"].forEach(function (k) { var v = Math.floor(Number(b[k])); b[k] = v >= 0 ? v : 0; });
+    return b;
+  }
+  function infBestScore() { return infBest().best; }
+  function infIsHard(u) { return (u.k === "exam" && u.calc) || (u.imp || 1) >= 3; }
+  function infBatch(stage, recent, rng) {
+    rng = rng || Math.random;
+    var rec = {};
+    (recent || []).forEach(function (id) { rec[String(id).split("|")[0]] = 1; });
+    var all = playUnits().filter(function (u) { return !u.off; });
+    var hp = infHardP(stage), xp = infXP(stage);
+    var gs = REIGNS_GROUPS.slice(), off = Math.floor(rng() * gs.length), out = [], used = {};
+    for (var i = 0; i < INF.perStage; i++) {
+      var g = gs[(i + off) % gs.length];
+      var inG = all.filter(function (u) { return g.subjects.indexOf(u.s) >= 0 && !used[u.u]; });
+      var fresh = inG.filter(function (u) { return !rec[u.u]; });
+      if (fresh.length >= 3) inG = fresh;
+      if (!inG.length) inG = all.filter(function (u) { return !used[u.u]; });
+      var wantHard = rng() < hp;
+      var pool = inG.filter(function (u) { return wantHard ? infIsHard(u) : !infIsHard(u); });
+      if (!pool.length) pool = inG;
+      var u = pool[Math.floor(rng() * pool.length)];
+      if (!u) continue;
+      used[u.u] = 1;
+      if (u.k === "blank") { out.push(u.u); continue; }
+      var vi = (u.x && u.x.length && rng() < xp) ? 1 + Math.floor(rng() * u.x.length) : 0;
+      out.push(u.u + "|" + vi);
+    }
+    return out;
+  }
+  function infFill(s) {
+    if (!s || s.mode !== "infinite") return;
+    while (s.queue.length - s.index <= 3) {
+      var st = infStage(s.queue.length);
+      var add = infBatch(st, s.queue.slice(-80));
+      if (!add.length) break;
+      s.queue = s.queue.concat(add);
+    }
+  }
+  function startInf() {
+    var w = ensureWallet(); var b = infBest();
+    var gauges = {};
+    REIGNS_GROUPS.forEach(function (x) { gauges[x.id] = 10; });
+    state.reigns = {
+      mode: "infinite", hp: INF.hp, gauges: gauges, g10: true, score: 0, days: 0, best: 0, correct: 0,
+      diff: "normal", groups: REIGNS_GROUPS.map(function (x) { return x.id; }), total: 0,
+      queue: infBatch(1, []), index: 0, revealed: false, lastOk: null, lastDelta: 0,
+      over: false, cleared: false, awarded: false, wrongIds: [], who: mainChar(), talk: null, heal: false
+    };
+    b.runs += 1;
+    saveState(state);
+    go("복습", "개념카드세션");
+  }
+  function answerInf(s, item, ok) {
+    var stg = infStage(s.index), cur = s.hp == null ? INF.hp : s.hp;
+    var heal = !!(ok && s.heal && cur < INF.hp);
+    var next = ok ? Math.min(INF.hp, cur + (heal ? INF.heal : 0)) : Math.max(0, cur - infDmg(stg));
+    s.hp = next; s.lastDelta = next - cur; s.lastHeal = heal; s.lastShield = false; s.lastGid = "inf";
+    var imp = itemImportance(item), pts = Math.round(imp * infMult(stg));
+    if (ok) { s.lastPts = pts; s.score = (s.score || 0) + pts; s.correct = (s.correct || 0) + 1; } else s.lastPts = 0;
+    s.who = mainChar();
+    s.streak = ok ? (s.streak || 0) + 1 : 0;
+    var sit;
+    if (ok) sit = heal ? "heal" : (s.streak >= 3 && s.streak % 3 === 0) ? "streak" : imp >= 4 ? "hard_correct" : "correct";
+    else sit = (next > 0 && next <= infDmg(infStage(s.index + 1))) ? "danger" : "wrong";
+    applyCharLine(s, charLine(s.who, sit, { ans: item.type === "choice" ? (item.answer === "right" ? item.right : item.left) : (item.truth ? "O" : "X"), n: s.streak }));
+    if (item.kind === "ox" && !item.unit) {
+      if (!ok) { if ((state.oxWrong || []).indexOf(item.id) < 0) state.oxWrong.push(item.id); }
+      else state.oxWrong = (state.oxWrong || []).filter(function (x) { return x !== item.id; });
+    } else recordCramWrong(item.id, ok);
+    if (!ok && s.wrongIds.indexOf(item.id) < 0) s.wrongIds.push(item.id);
+    if (next <= 0) { s.over = true; applyCharLine(s, charLine(s.who, "gameover")); awardInf(s); }
+    saveState(state);
+    render();
+  }
+  function infCoins(s) {
+    var n = s.correct || 0, score = s.score || 0;
+    var raw = Math.floor(n * 2 + score / 5), capped = Math.min(INF.coinCap, raw), m = coinMult();
+    return { inf: true, win: false, n: n, score: score, raw: raw, capped: capped, mult: m, coins: Math.round(capped * m) };
+  }
+  function awardInf(s) {
+    if (!s || s.awarded) return;
+    var w = ensureWallet(), b = infBest();
+    var r = infCoins(s);
+    w.coins += r.coins;
+    r.stage = infStage(s.index);
+    r.newBest = (s.score || 0) > b.best;
+    if (r.newBest) b.best = s.score || 0;
+    if (r.stage > b.bestStage) b.bestStage = r.stage;
+    s.result = r;
+    s.awarded = true;
+    s.upload = null;
+    saveState(state);
+    socialFlush().then(function (st) { s.upload = st.state; if (/개념카드오버/.test(decodeURIComponent(location.hash || ""))) render(); });
+  }
+  function infHpEl(s) {
+    var v = s.hp == null ? INF.hp : s.hp, stg = infStage(s.index);
+    var tone = v <= infDmg(stg) ? "is-low" : v <= INF.hp / 2 ? "is-mid" : "";
+    var box = el("div", { class: "inf-hp " + tone, "aria-label": "체력 " + v + "/" + INF.hp }, [
+      el("span", { class: "inf-hp-label", text: "체력" }),
+      el("div", { class: "inf-hp-track" }, [el("div", { class: "inf-hp-fill", style: "width:" + Math.max(0, Math.min(100, v / INF.hp * 100)).toFixed(1) + "%" })]),
+      el("b", { class: "inf-hp-num num", text: v + "/" + INF.hp }),
+      el("span", { class: "inf-hp-dmg", text: "오답 −" + infDmg(stg) })
+    ]);
+    if (s.revealed && s.lastDelta) box.appendChild(el("span", { class: "reigns-g-delta " + (s.lastDelta > 0 ? "is-up" : "is-down"), text: (s.lastDelta > 0 ? "+" : "−") + Math.abs(s.lastDelta) }));
+    return box;
+  }
+  function viewInfHub() {
+    var b = infBest(), w = ensureWallet();
+    var page = el("div", { class: "stage-hub inf-hub" });
+    page.appendChild(backBtn("게임 시작", function () { go("복습"); }));
+    page.appendChild(el("h1", { text: "무한 모드" }));
+    page.appendChild(walletStrip(w));
+    var line = el("div", { class: "hub-lineup", "aria-hidden": "true" });
+    line.appendChild(dressImg(mainChar(), "is-hub"));
+    page.appendChild(line);
+    page.appendChild(el("p", { class: "inf-best" }, [el("span", { text: "최고 기록 " }), el("b", { class: "num", text: b.best + "점" }), el("span", { text: " · 최고 " + b.bestStage + "스테이지" })]));
+    var ul = el("ul", { class: "inf-rules" });
+    ["6과목 전체에서 끝없이 나온다. 시간제한은 없다.",
+     INF.perStage + "문제마다 스테이지 +1. 스테이지가 오를수록 계산 기출·중요 문제·X 카드가 많아진다.",
+     "체력 " + INF.hp + " 하나. 오답 피해 = 2 + 스테이지 (1스테이지 −3, 2스테이지 −4 …, 최대 −" + INF.hp + ").",
+     "회복 문제는 드물게 나오고 맞히면 +" + INF.heal + ".",
+     "점수 = 중요도 점수 × (1 + 0.25 × (스테이지 − 1)). 최고 점수는 온라인 랭킹에 올라간다.",
+     "코인 = 맞힌 수 × 2 + 점수 ÷ 5 (한 판 최대 " + INF.coinCap + ", 코인 강화 적용). 강화·캐릭터 능력치는 체력에 적용되지 않는다."].forEach(function (t) { ul.appendChild(el("li", { text: t })); });
+    page.appendChild(ul);
+    page.appendChild(el("button", { class: "btn review-cta stage-endless inf-start", type: "button", onclick: function () { startInf(); } }, [
+      el("span", { text: "무한 모드 시작" }), el("span", { class: "review-cta-sub", text: "체력 " + INF.hp + " · 오답 −3부터" })
+    ]));
+    var s = state.reigns;
+    if (s && s.mode === "infinite" && s.queue && !s.over) {
+      page.appendChild(el("button", { class: "btn btn-secondary review-cta stage-resume", type: "button", onclick: function () { go("복습", "개념카드세션"); } }, [
+        el("span", { text: "이어하기" }), el("span", { class: "review-cta-sub", text: infStage(s.index) + "스테이지 · " + (s.index + 1) + "번째 문제 · 체력 " + s.hp })
+      ]));
+    }
+    page.appendChild(el("button", { class: "btn btn-secondary review-cta inf-rank-btn", type: "button", text: "온라인 랭킹 보기", onclick: function () { _rank = null; go("복습", "랭킹"); } }));
+    return [page];
+  }
+  function viewInfOver() {
+    var s = state.reigns;
+    if (!s.awarded) awardInf(s);
+    var b = infBest(), r = s.result || infCoins(s);
+    var reach = infStage(s.index);
+    var play = el("div", { class: "stage-result is-over is-endless is-inf reigns-play" });
+    play.appendChild(el("h1", { text: "무한 모드 결과" }));
+    play.appendChild(el("div", { class: "result-meta" }, [diffPill(s), el("span", { class: "num inf-result-meta", text: "도달 " + reach + "스테이지 · " + (s.index + 1) + "문제 · 점수 " + (s.score || 0) })]));
+    play.appendChild(el("div", { class: "result-hero" }, [sceneHero(s.who || "hangyeol", s.img, "is-result is-sad")]));
+    play.appendChild(el("p", { class: "result-say reigns-say" }, [el("span", { html: s.talk || "체력이 바닥났다." })]));
+    play.appendChild(el("p", { class: "endless-best inf-best-line" + (r.newBest ? " is-new" : "") }, [
+      el("b", { text: r.newBest ? "최고 기록 갱신!" : "최고 기록" }), el("span", { class: "num", text: " " + b.best + "점 · 최고 " + b.bestStage + "스테이지" })
+    ]));
+    var up = s.upload, upText = up === "ok" ? "온라인 랭킹에 반영했어요." : up === "nologin" ? "로그인하면 온라인 랭킹에 올라가요." : up === "nonick" ? "닉네임을 정하면 랭킹에 올라가요. (설정 → 닉네임)" : up === "taken" ? "닉네임이 겹쳐요. 설정에서 바꿔 주세요." : up === "notready" ? "랭킹 준비 중 · 기록은 기기에 저장했고 나중에 자동으로 올려요." : "랭킹에 올리는 중…";
+    play.appendChild(el("p", { class: "inf-up-msg", role: "status", text: upText }));
+    play.appendChild(el("p", { class: "coin-big" }, [el("i", { class: "coin-dot", "aria-hidden": "true" }), el("b", { class: "num", text: "+" + r.coins }), el("span", { text: " 코인" })]));
+    var box = el("div", { class: "coin-calc" });
+    [["맞힌 수", r.n + " × 2 = " + (r.n * 2)], ["점수 보너스", "점수 " + r.score + " ÷ 5 = " + Math.floor(r.score / 5)],
+     ["상한", INF.coinCap + (r.raw > INF.coinCap ? " (상한에 걸림)" : "")]].concat(r.mult > 1 ? [["코인 강화", "×" + r.mult]] : []).forEach(function (x) {
+      box.appendChild(el("p", { class: "coin-row" }, [el("span", { text: x[0] }), el("b", { class: "num", text: x[1] })]));
+    });
+    box.appendChild(el("p", { class: "coin-row is-sum" }, [el("span", { text: "합계" }), el("b", { class: "num", text: r.capped + (r.mult > 1 ? " × " + r.mult : "") + " = " + r.coins })]));
+    play.appendChild(box);
+    if ((s.wrongIds || []).length) {
+      play.appendChild(el("h2", { class: "reigns-over-h", text: "틀린 카드" }));
+      var ul = el("ul", { class: "over-wrong" });
+      (s.wrongIds || []).slice(0, 8).forEach(function (id) { var it = lookupPlayItem(id); if (it) ul.appendChild(el("li", { text: (it.title || subjectLabel(it.subject)) })); });
+      play.appendChild(ul);
+    }
+    play.appendChild(el("div", { class: "result-btns" }, [
+      el("button", { class: "btn review-cta", type: "button", text: "다시 도전", onclick: function () { startInf(); } }),
+      el("button", { class: "btn btn-secondary review-cta", type: "button", text: "랭킹 보기", onclick: function () { _rank = null; go("복습", "랭킹"); } }),
+      el("button", { class: "btn btn-secondary review-cta", type: "button", text: "게임 홈", onclick: function () { go("복습"); } })
+    ]));
+    return [play];
+  }
   function startReigns(opts) {
     var w = ensureWallet();
     opts = opts || {};
@@ -19700,7 +20053,7 @@ exports.withFuzzing = withFuzzing;
     var kids = [];
     var hub = el("div", { class: "stage-hub" });
     hub.appendChild(backBtn("게임 시작", function () { go("복습"); }));
-    hub.appendChild(el("h1", { text: mode === "endless" ? "무한 모드" : "스테이지" }));
+    hub.appendChild(el("h1", { text: mode === "endless" ? "무한 연습" : "스테이지" }));
     hub.appendChild(walletStrip(w));
     var line = el("div", { class: "hub-lineup", "aria-hidden": "true" });
     line.appendChild(dressImg(mainChar(), "is-hub"));
@@ -19743,7 +20096,7 @@ exports.withFuzzing = withFuzzing;
     ]));
     var EB = w.endless || { best: 0, bestScore: 0 };
     hub.appendChild(el("button", { class: "btn review-cta stage-endless only-endless", type: "button", disabled: n ? null : true, onclick: function () { startEndless(); } }, [
-      el("span", { text: "무한 모드" }),
+      el("span", { text: "무한 연습 시작" }),
       el("span", { class: "review-cta-sub", text: "고른 과목 · 게이지가 0이 될 때까지 · 최고 " + EB.best + "라운드 / " + EB.bestScore + "점" })
     ]));
     hub.appendChild(el("p", { class: "hub-note only-endless", text: "무한 모드는 라운드가 오를수록 문제가 어려워지고 오답 감점이 커진다. 코인은 도달 라운드에 비례하고 한 판 최대 " + ENDLESS_COIN_CAP + "코인(강화 전). 클리어 수에는 들어가지 않는다." }));
@@ -19751,7 +20104,7 @@ exports.withFuzzing = withFuzzing;
     if (s && s.queue && !s.over && !s.cleared && s.index < stageTotal(s)) {
       hub.appendChild(el("button", { class: "btn btn-secondary review-cta stage-resume", type: "button", onclick: function () { go("복습", "개념카드세션"); } }, [
         el("span", { text: "이어하기" }),
-        el("span", { class: "review-cta-sub", text: s.mode === "endless" ? "무한 모드 · 라운드 " + (s.index + 1) : "라운드 " + (s.index + 1) + "/" + stageTotal(s) + " · " + (STAGE_DIFFS[s.diff] || STAGE_DIFFS.normal).label })
+        el("span", { class: "review-cta-sub", text: s.mode === "infinite" ? "무한 모드 · " + infStage(s.index) + "스테이지" : s.mode === "endless" ? "무한 연습 · 라운드 " + (s.index + 1) : "라운드 " + (s.index + 1) + "/" + stageTotal(s) + " · " + (STAGE_DIFFS[s.diff] || STAGE_DIFFS.normal).label })
       ]));
     }
     Array.prototype.slice.call(hub.querySelectorAll(mode === "endless" ? ".only-stage" : ".only-endless")).forEach(function (n) { n.remove(); });
@@ -19761,6 +20114,7 @@ exports.withFuzzing = withFuzzing;
 
   function ensureReignsQueue(s) {
     if (s && s.mode === "endless") { endlessFill(s); return; }
+    if (s && s.mode === "infinite") { infFill(s); return; }
     var total = stageTotal(s);
     if (s.queue && s.index >= s.queue.length && !s.over && s.index < total) {
       var more = buildStageQueue(s.diff, s.groups);
@@ -19786,6 +20140,7 @@ exports.withFuzzing = withFuzzing;
     s.ask = null;
     if (s.mode === "endless") s.diff = endlessRule(s.index).diff;
     s.heal = Math.random() < healChance(s.mode === "endless" ? STAGE_DIFFS.normal : D);
+    if (s.mode === "infinite") { s.heal = Math.random() < INF.healP; s.stageUp = s.index > 0 && s.index % INF.perStage === 0; }
     ensureReignsQueue(s);
     saveState(state);
     render();
@@ -19806,6 +20161,7 @@ exports.withFuzzing = withFuzzing;
     else ok = picked === !!item.truth;
     s.revealed = true;
     s.lastOk = ok;
+    if (s.mode === "infinite") { s.stageUp = false; answerInf(s, item, ok); return; }
     var g = groupOfSubject(item.subject);
     var cur = s.gauges[g.id] == null ? D.start : s.gauges[g.id];
     var healGid = null;
@@ -19972,7 +20328,7 @@ exports.withFuzzing = withFuzzing;
     if (!s.revealed) {
       who = s.who = mainChar();
       if (!s.ask || s.ask.idx !== s.index || s.ask.who !== who) {
-        var danger0 = (s.groups || []).some(function (gid) { return s.gauges[gid] <= 2; });
+        var danger0 = s.mode === "infinite" ? (s.hp <= infDmg(infStage(s.index))) : (s.groups || []).some(function (gid) { return s.gauges[gid] <= 2; });
         s.ask = charLine(who, danger0 ? "danger" : "ask"); s.ask.idx = s.index; s.ask.who = who;
       }
     }
@@ -19982,15 +20338,16 @@ exports.withFuzzing = withFuzzing;
     play.appendChild(el("div", { class: "cram-top" }, [
       el("button", { class: "review-exit", type: "button", text: "종료", onclick: function () { go("복습"); } }),
       el("p", { class: "cram-count", text: item.title || subjectLabel(item.subject) }),
-      el("span", { class: "round-pill num", text: s.mode === "endless" ? "∞ " + (s.index + 1) : (s.index + 1) + "/" + stageTotal(s) }),
+      el("span", { class: "round-pill num", text: (s.mode === "endless" || s.mode === "infinite") ? "∞ " + (s.index + 1) : (s.index + 1) + "/" + stageTotal(s) }),
       diffPill(s),
       calcBtn()
     ]));
     var hintG = groupOfSubject(item.subject).id;
-    var gRow = reignsGaugesEl(s, s._hintG, s._hintA);
+    var gRow = s.mode === "infinite" ? infHpEl(s) : reignsGaugesEl(s, s._hintG, s._hintA);
     var curCell = gRow.querySelector('.reigns-g[data-gid="' + hintG + '"]');
     if (curCell) { gRow.classList.add("has-cur"); curCell.classList.add("is-cur"); curCell.setAttribute("aria-current", "true"); }
     play.appendChild(gRow);
+    if (s.mode === "infinite" && s.stageUp && !s.revealed) play.appendChild(el("p", { class: "inf-stageup", role: "status", text: infStage(s.index) + "스테이지 시작! 이제 오답 −" + infDmg(infStage(s.index)) }));
     var card = el("div", { class: "reigns-card" + (s.revealed ? " is-flip is-rev" : ""), id: "reigns-card" });
     var isCh = item.type === "choice";
     var leftLabel = isCh ? item.left : "X";
@@ -19998,7 +20355,7 @@ exports.withFuzzing = withFuzzing;
     card.appendChild(el("span", { class: "reigns-choice is-x" + (isCh ? "" : " is-big"), html: leftLabel }));
     card.appendChild(el("span", { class: "reigns-choice is-o" + (isCh ? "" : " is-big"), html: rightLabel }));
     var imp = itemImportance(item);
-    if (s.heal && !s.revealed) card.appendChild(el("span", { class: "reigns-heal", text: "회복 문제 +" + healAmt() }));
+    if (s.heal && !s.revealed) card.appendChild(el("span", { class: "reigns-heal", text: "회복 문제 +" + (s.mode === "infinite" ? INF.heal : healAmt()) }));
     card.classList.toggle("is-heal", !!s.heal);
     card.appendChild(el("span", { class: "reigns-imp imp-" + imp, "aria-label": "중요도 " + imp + "점", text: imp + "점" }));
     var port = el("div", { class: "reigns-portrait" });
@@ -20046,7 +20403,7 @@ exports.withFuzzing = withFuzzing;
     }
     if (s.revealed) play.appendChild(el("div", { class: "reigns-days-wrap" }, [
       el("p", { class: "kicker", text: "라운드" }),
-      el("p", { class: "num reigns-round", text: s.mode === "endless" ? String(s.index + 1) : (s.index + 1) + "/" + stageTotal(s) }),
+      el("p", { class: "num reigns-round", text: (s.mode === "endless" || s.mode === "infinite") ? String(s.index + 1) : (s.index + 1) + "/" + stageTotal(s) }),
       el("p", { class: "kicker", text: "점수" }),
       el("p", { class: "num reigns-score", text: String(s.score || 0) + (s.revealed && s.lastPts ? " (" + (s.lastPts > 0 ? "+" : "−") + Math.abs(s.lastPts) + ")" : "") })
     ]));
@@ -20116,6 +20473,7 @@ exports.withFuzzing = withFuzzing;
   /* ---- 0.7.39 결과 · 클리어 · 코스튬 · 뽑기 · 설정 · 계산기 팝업 ---- */
   function diffPill(s) {
     if (s && s.mode === "endless") { var ER = endlessRule(s.index); return el("span", { class: "diff-pill diff-endless", text: "무한 " + ER.lv + "단계" }); }
+    if (s && s.mode === "infinite") return el("span", { class: "diff-pill diff-inf", text: infStage(s.index) + "스테이지" });
     var D = STAGE_DIFFS[(s && s.diff)] || STAGE_DIFFS.normal;
     return el("span", { class: "diff-pill diff-" + D.id, text: D.label });
   }
@@ -20170,6 +20528,7 @@ exports.withFuzzing = withFuzzing;
   function viewReignsOver() {
     var s = state.reigns || { days: 0, wrongIds: [], who: "hangyeol", face: "sad", talk: "" };
     if (s.mode === "endless" && s.queue) return viewEndlessOver();
+    if (s.mode === "infinite" && s.queue) return viewInfOver();
     if (s.queue && !s.awarded && s.over) awardStage(s, false);
     var w = ensureWallet(), r = s.result || { win: false, coins: 0, score: s.score || 0 };
     var play = el("div", { class: "stage-result is-over reigns-play" });
@@ -20564,7 +20923,7 @@ exports.withFuzzing = withFuzzing;
     page.appendChild(syncSection());
     page.appendChild(el("h2", { text: "비공식 팬아트 고지" }));
     page.appendChild(el("p", { class: "fan-notice", text: "이 앱에 나오는 버추얼 유튜버 관련 그림·이름·대사는 팬이 만든 비공식 2차 창작이며, 각 소속사·본인과 관계가 없습니다. 각 캐릭터에 대한 모든 권리는 해당 소속사(이세계아이돌: 왁엔터테인먼트, 스텔라이브: 스텔라이브/Brave group 등)와 본인에게 있습니다. 비상업 개인 학습용이며 수익이 없습니다. 권리자가 요청하면 즉시 삭제합니다." }));
-    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.49" }));
+    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.50" }));
     return [page];
   }
 
@@ -20643,6 +21002,7 @@ exports.withFuzzing = withFuzzing;
   window.ElecStudyTest.allCramCards = allCramCards;
   window.ElecStudyTest.CRAM_BLANKS = CRAM_BLANKS;
   window.ElecStudyTest.answerReigns = answerReigns;
+  window.ElecStudyTest.inf = { INF: INF, infStage: infStage, infDmg: infDmg, infMult: infMult, infBatch: infBatch, startInf: startInf, nickCheck: nickCheck, setNick: setNick, socialMeta: socialMeta, infBest: infBest, RANK_API: RANK_API, reigns: function () { return state.reigns; }, unit: unitOf };
   window.ElecStudyTest.reignsAdvance = reignsAdvance;
   window.ElecStudyTest.viewCramDeck = viewCramDeck;
   window.ElecStudyTest.debugReignsDrag = function (dx) {
@@ -20735,6 +21095,10 @@ exports.withFuzzing = withFuzzing;
         kids = viewReignsHub("stage");
       } else if (route.a === "무한") {
         kids = viewReignsHub("endless");
+      } else if (route.a === "무한도전") {
+        kids = viewInfHub();
+      } else if (route.a === "랭킹") {
+        kids = viewRanking();
       } else {
         kids = viewGameStart();
       }
@@ -20746,6 +21110,7 @@ exports.withFuzzing = withFuzzing;
   window.ElecStudyTest.render = function (h) { return render(typeof h === "string" ? h : (lastGoHash || undefined)); };
   window.addEventListener("hashchange", render);
   render();
+  setTimeout(socialFlushQuiet, 5000);
 })();
 </script>
   <script>
