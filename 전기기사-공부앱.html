@@ -2861,6 +2861,14 @@ html[data-bg]:not([data-bg="b01"]) .app-shell.is-game .ox-scene-art::after { bac
 .inf-hp-num { font-weight: 900; min-width: 2.6rem; text-align: right; }
 .inf-hp-dmg { font-size: 0.72rem; opacity: 0.85; white-space: nowrap; }
 .inf-hp .reigns-g-delta { position: absolute; right: 0.6rem; top: -0.6rem; }
+.inf-timer { display: flex; align-items: center; gap: 0.5rem; margin: 0 0.35rem 0.35rem; padding: 0.3rem 0.6rem; border-radius: 10px; background: rgba(15, 23, 42, 0.72); color: #fff; font-size: 0.85rem; }
+.inf-timer-label { font-weight: 800; white-space: nowrap; }
+.inf-timer.is-calc .inf-timer-label { color: #93c5fd; }
+.inf-timer-track { flex: 1 1 auto; height: 0.5rem; border-radius: 99px; background: rgba(255,255,255,0.18); overflow: hidden; }
+.inf-timer-fill { height: 100%; background: #38bdf8; border-radius: 99px; }
+.inf-timer.is-low .inf-timer-fill { background: #ef4444; }
+.inf-timer-num { min-width: 2.4rem; text-align: right; }
+.inf-timeout { color: #b91c1c; font-weight: 900; }
 .inf-stageup { margin: 0 0.35rem 0.35rem; padding: 0.3rem 0.6rem; border-radius: 10px; background: #fde68a; color: #7c2d12; font-weight: 900; text-align: center; font-size: 0.9rem; }
 .inf-hub .inf-rules { margin: 0.4rem 0 0.8rem; padding: 0.7rem 0.9rem 0.7rem 1.6rem; border-radius: 12px; background: #fff; border: 1.5px solid #e2e8f0; line-height: 1.55; font-size: 0.9rem; }
 .inf-hub .inf-best { font-size: 1.05rem; font-weight: 800; margin: 0.2rem 0 0.6rem; }
@@ -19832,6 +19840,23 @@ exports.withFuzzing = withFuzzing;
   function infMult(stage) { return 1 + 0.25 * (stage - 1); }
   function infHardP(stage) { return Math.min(0.85, 0.15 + 0.1 * (stage - 1)); }
   function infXP(stage) { return Math.min(0.8, 0.5 + 0.05 * (stage - 1)); }
+  /* 0.7.50 제한 시간: 1~5스테이지는 없음. 6스테이지부터 일반 문제 10초(스테이지마다 −1초, 최소 5초),
+     계산 문제(계산 기출) 45초(스테이지마다 −3초, 최소 30초 — 30초 밑으로는 절대 안 내려감). 시간이 다 되면 오답 처리 */
+  var INF_TIME = { from: 6, base: 10, step: 1, min: 5, calcBase: 45, calcStep: 3, calcMin: 30 };
+  function infIsCalcItem(item) { var u = item && item.unit ? unitOf(item.unit) : null; return !!(u && u.k === "exam" && u.calc); }
+  function infTimeLimit(stage, calc) {
+    if (stage < INF_TIME.from) return 0;
+    var k = stage - INF_TIME.from;
+    return calc ? Math.max(INF_TIME.calcMin, INF_TIME.calcBase - INF_TIME.calcStep * k) : Math.max(INF_TIME.min, INF_TIME.base - INF_TIME.step * k);
+  }
+  function infTimeout() {
+    var s = state.reigns;
+    if (!s || s.mode !== "infinite" || s.revealed || s.over) return;
+    var item = lookupPlayItem(s.queue[s.index]);
+    if (!item) return;
+    s.revealed = true; s.lastOk = false; s.stageUp = false; s.lastTimeout = true;
+    answerInf(s, item, false);
+  }
   function infBest() {
     var w = ensureWallet(), b = w.inf;
     if (!b || typeof b !== "object") b = w.inf = {};
@@ -19889,6 +19914,9 @@ exports.withFuzzing = withFuzzing;
     go("복습", "개념카드세션");
   }
   function answerInf(s, item, ok) {
+    if (window._infTimer) { clearInterval(window._infTimer); window._infTimer = null; }
+    if (!s.lastTimeout) s.lastTimeout = false;
+    s.deadline = null;
     var stg = infStage(s.index), cur = s.hp == null ? INF.hp : s.hp;
     var heal = !!(ok && s.heal && cur < INF.hp);
     var next = ok ? Math.min(INF.hp, cur + (heal ? INF.heal : 0)) : Math.max(0, cur - infDmg(stg));
@@ -19953,7 +19981,8 @@ exports.withFuzzing = withFuzzing;
     page.appendChild(line);
     page.appendChild(el("p", { class: "inf-best" }, [el("span", { text: "최고 기록 " }), el("b", { class: "num", text: b.best + "점" }), el("span", { text: " · 최고 " + b.bestStage + "스테이지" })]));
     var ul = el("ul", { class: "inf-rules" });
-    ["6과목 전체에서 끝없이 나온다. 시간제한은 없다.",
+    ["6과목 전체에서 끝없이 나온다. 1~5스테이지는 시간제한이 없다.",
+     "6스테이지부터 제한 시간: 일반 문제 10초(스테이지마다 −1초, 최소 5초), 계산 문제 45초(스테이지마다 −3초, 최소 30초). 시간이 다 되면 오답.",
      INF.perStage + "문제마다 스테이지 +1. 스테이지가 오를수록 계산 기출·중요 문제·X 카드가 많아진다.",
      "체력 " + INF.hp + " 하나. 오답 피해 = 2 + 스테이지 (1스테이지 −3, 2스테이지 −4 …, 최대 −" + INF.hp + ").",
      "회복 문제는 드물게 나오고 맞히면 +" + INF.heal + ".",
@@ -20161,7 +20190,7 @@ exports.withFuzzing = withFuzzing;
     else ok = picked === !!item.truth;
     s.revealed = true;
     s.lastOk = ok;
-    if (s.mode === "infinite") { s.stageUp = false; answerInf(s, item, ok); return; }
+    if (s.mode === "infinite") { s.stageUp = false; s.lastTimeout = false; answerInf(s, item, ok); return; }
     var g = groupOfSubject(item.subject);
     var cur = s.gauges[g.id] == null ? D.start : s.gauges[g.id];
     var healGid = null;
@@ -20347,7 +20376,30 @@ exports.withFuzzing = withFuzzing;
     var curCell = gRow.querySelector('.reigns-g[data-gid="' + hintG + '"]');
     if (curCell) { gRow.classList.add("has-cur"); curCell.classList.add("is-cur"); curCell.setAttribute("aria-current", "true"); }
     play.appendChild(gRow);
-    if (s.mode === "infinite" && s.stageUp && !s.revealed) play.appendChild(el("p", { class: "inf-stageup", role: "status", text: infStage(s.index) + "스테이지 시작! 이제 오답 −" + infDmg(infStage(s.index)) }));
+    if (s.mode === "infinite" && s.stageUp && !s.revealed) play.appendChild(el("p", { class: "inf-stageup", role: "status", text: infStage(s.index) + "스테이지 시작! 이제 오답 −" + infDmg(infStage(s.index)) + (infTimeLimit(infStage(s.index), false) ? " · 제한 시간 시작" : "") }));
+    if (window._infTimer) { clearInterval(window._infTimer); window._infTimer = null; }
+    if (s.mode === "infinite" && !s.revealed && !s.over) {
+      var tCalc = infIsCalcItem(item), tLim = infTimeLimit(infStage(s.index), tCalc);
+      s.timeLimit = tLim;
+      if (tLim) {
+        if (!s.deadline || s.deadlineIdx !== s.index) { s.deadline = Date.now() + tLim * 1000; s.deadlineIdx = s.index; }
+        var tFill = el("div", { class: "inf-timer-fill" }), tNum = el("b", { class: "inf-timer-num num" });
+        var tBox = el("div", { class: "inf-timer" + (tCalc ? " is-calc" : ""), id: "inf-timer", "data-limit": String(tLim) }, [
+          el("span", { class: "inf-timer-label", text: tCalc ? "계산 " + tLim + "초" : tLim + "초" }), el("div", { class: "inf-timer-track" }, [tFill]), tNum ]);
+        var tIdx = s.index;
+        var tick = function () {
+          if (state.reigns !== s || s.revealed || s.index !== tIdx || !document.getElementById("inf-timer")) { if (window._infTimer) { clearInterval(window._infTimer); window._infTimer = null; } return; }
+          var left = Math.max(0, s.deadline - Date.now());
+          tNum.textContent = Math.ceil(left / 1000) + "초";
+          tFill.style.width = (left / (tLim * 1000) * 100).toFixed(1) + "%";
+          tBox.classList.toggle("is-low", left <= 3000);
+          if (left <= 0) { clearInterval(window._infTimer); window._infTimer = null; infTimeout(); }
+        };
+        tick();
+        window._infTimer = setInterval(tick, 200);
+        play.appendChild(tBox);
+      }
+    }
     var card = el("div", { class: "reigns-card" + (s.revealed ? " is-flip is-rev" : ""), id: "reigns-card" });
     var isCh = item.type === "choice";
     var leftLabel = isCh ? item.left : "X";
@@ -20375,6 +20427,7 @@ exports.withFuzzing = withFuzzing;
     if (s.revealed) {
       var ok = !!s.lastOk;
       var box = el("div", { class: "reigns-explain ox-feedback " + (ok ? "is-ok" : "is-bad") });
+      if (s.mode === "infinite" && s.lastTimeout) box.appendChild(el("p", { class: "answer-line inf-timeout", text: "시간 초과! 오답으로 처리했다." }));
       box.appendChild(el("p", { class: "answer-line", text: (ok ? "정답이다." : "오답이다.") + (item.type === "choice" ? "" : (item.truth ? " 이 카드는 O(맞는 말)." : " 이 카드는 X(틀린 말).")) }));
       if (item.explain) box.appendChild(el("p", { html: item.explain }));
       card.appendChild(box);
@@ -21002,7 +21055,7 @@ exports.withFuzzing = withFuzzing;
   window.ElecStudyTest.allCramCards = allCramCards;
   window.ElecStudyTest.CRAM_BLANKS = CRAM_BLANKS;
   window.ElecStudyTest.answerReigns = answerReigns;
-  window.ElecStudyTest.inf = { INF: INF, infStage: infStage, infDmg: infDmg, infMult: infMult, infBatch: infBatch, startInf: startInf, nickCheck: nickCheck, setNick: setNick, socialMeta: socialMeta, infBest: infBest, RANK_API: RANK_API, reigns: function () { return state.reigns; }, unit: unitOf };
+  window.ElecStudyTest.inf = { INF: INF, infStage: infStage, infDmg: infDmg, infMult: infMult, infBatch: infBatch, startInf: startInf, nickCheck: nickCheck, setNick: setNick, socialMeta: socialMeta, infBest: infBest, RANK_API: RANK_API, infTimeLimit: infTimeLimit, infIsCalcItem: infIsCalcItem, INF_TIME: INF_TIME, reigns: function () { return state.reigns; }, unit: unitOf };
   window.ElecStudyTest.reignsAdvance = reignsAdvance;
   window.ElecStudyTest.viewCramDeck = viewCramDeck;
   window.ElecStudyTest.debugReignsDrag = function (dx) {
