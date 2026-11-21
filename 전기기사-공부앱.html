@@ -159,6 +159,7 @@ a:hover { text-decoration: none; }
 }
 .app-shell.is-immersive { padding-bottom: 0; }
 .app-shell.is-immersive .tabs { display: none; }
+.gate-skip { display: block; margin: 18px auto 0; background: none; border: 0; color: inherit; opacity: .6; font-size: 13px; text-decoration: underline; padding: 8px 12px; cursor: pointer; }
 .site-header {
   display: flex;
   align-items: baseline;
@@ -14422,13 +14423,19 @@ exports.withFuzzing = withFuzzing;
     return el("div", { class: "sync-box" }, kids);
   }
   var _authMsg = "", _pendingUser = "";
+  /* 0.7.49: 토큰이 없으면 앱을 열 때 로그인 화면이 먼저 뜬다. '로그인 없이 쓰기'는 이번 실행에서만 넘긴다(저장 안 함) */
+  var _gate = !syncSession();
+  function gateOn() { return _gate && !syncSession(); }
+  function gateSkip() { _gate = false; go("홈"); }
+  function gateSkipBtn() { return el("button", { class: "btn-link gate-skip", type: "button", text: "로그인 없이 쓰기", onclick: gateSkip }); }
   function viewAuthPending(rejected) {
     var page = el("div", { class: "settings auth-page" });
-    page.appendChild(backBtn("설정", function () { _pendingCred = null; go("설정"); }));
+    if (!gateOn()) page.appendChild(backBtn("설정", function () { _pendingCred = null; go("설정"); }));
     if (rejected) {
       page.appendChild(el("h1", { text: "가입이 거절됐어요" }));
       page.appendChild(el("p", { class: "auth-ready is-bad", role: "status", text: "가입이 거절됐어요." + (_pendingUser ? " (" + _pendingUser + ")" : "") + " 궁금한 점은 관리자에게 물어봐 주세요. 로그인하지 않아도 이 기기 저장으로 앱은 그대로 쓸 수 있어요." }));
       page.appendChild(el("button", { class: "btn btn-secondary review-cta", type: "button", text: "다른 아이디로 로그인", onclick: function () { _authMsg = ""; go("설정", "로그인"); } }));
+      if (gateOn()) page.appendChild(gateSkipBtn());
       return [page];
     }
     var user = (_pendingCred && _pendingCred.user) || _pendingUser || syncMeta().pendingUser || "";   /* 아이디만 기억하고 비밀번호는 기억하지 않는다 */
@@ -14443,7 +14450,7 @@ exports.withFuzzing = withFuzzing;
       btn.disabled = true; msg.textContent = "확인하는 중…";
       authCheckStatus().then(function (r) {
         btn.disabled = false;
-        if (r.ok) { _authMsg = ""; _pendingCred = null; var pm = syncMeta(); delete pm.pendingUser; syncSaveMeta(pm); go("설정"); return; }
+        if (r.ok) { _authMsg = ""; _pendingCred = null; var pm = syncMeta(); delete pm.pendingUser; syncSaveMeta(pm); go(_gate ? "홈" : "설정"); return; }
         if (r.rejected) { go("설정", "거절"); return; }
         if (r.pending && r.msg) { msg.textContent = r.msg; return; }
         if (r.need && !pwIn) { render(); return; }
@@ -14452,13 +14459,15 @@ exports.withFuzzing = withFuzzing;
     } });
     page.appendChild(el("div", { class: "sync-box" }, (pwIn ? [el("label", { class: "sync-l" }, [el("span", { text: "비밀번호" }), pwIn])] : []).concat([btn, msg])));
     page.appendChild(el("p", { class: "hub-note", text: "승인되면 '승인 확인'을 눌러 바로 로그인할 수 있어요. 기다리는 동안에도 이 기기 저장으로 앱은 그대로 쓸 수 있어요." }));
+    if (gateOn()) page.appendChild(gateSkipBtn());
     return [page];
   }
   function viewAuth(mode) {
     var signup = mode === "회원가입";
     var page = el("div", { class: "settings auth-page" });
-    page.appendChild(backBtn("설정", function () { go("설정"); }));
-    page.appendChild(el("h1", { text: signup ? "회원가입" : "로그인" }));
+    if (!gateOn()) page.appendChild(backBtn("설정", function () { go("설정"); }));
+    page.appendChild(el("h1", { text: signup ? "가입 신청" : "로그인" }));
+    if (gateOn()) page.appendChild(el("p", { class: "hub-note", text: "로그인하면 기록이 계정에 저장돼요." }));
     if (!AUTH_READY) page.appendChild(el("p", { class: "auth-ready", role: "status", text: "준비 중 · 계정 서버가 열리면 바로 쓸 수 있다. 지금은 로그인하지 않아도 이 기기에 저장되며 앱은 그대로 동작한다." }));
     var idIn = el("input", { class: "sync-in", type: "text", name: "username", autocomplete: "username", autocapitalize: "off", spellcheck: "false", maxlength: "20", placeholder: "아이디 (3~20자, 영문·숫자·_·한글)" });
     var pwIn = el("input", { class: "sync-in", type: "password", name: "password", autocomplete: signup ? "new-password" : "current-password", maxlength: "200", placeholder: "비밀번호 (6자 이상)" });
@@ -14477,7 +14486,7 @@ exports.withFuzzing = withFuzzing;
       if (msg) { _authMsg = msg; form.querySelector(".auth-msg").textContent = msg; return; }
       authLogin(signup ? "signup" : "login", id, pw).then(function (r) {
         pwIn.value = ""; if (pw2) pw2.value = "";
-        if (r.ok) { _authMsg = ""; go("설정"); }
+        if (r.ok) { _authMsg = ""; go(_gate ? "홈" : "설정"); }
         else if (r.pending) { _authMsg = r.msg; _pendingUser = r.user; var pm = syncMeta(); pm.pendingUser = r.user; syncSaveMeta(pm); go("설정", "승인대기"); }
         else if (r.rejected) { _authMsg = ""; _pendingUser = id; go("설정", "거절"); }
         else { _authMsg = r.msg; var n = form.querySelector(".auth-msg"); if (n) n.textContent = r.msg; }
@@ -14485,7 +14494,8 @@ exports.withFuzzing = withFuzzing;
     });
     page.appendChild(form);
     page.appendChild(el("p", { class: "hub-note" }, [el("span", { text: signup ? "이미 계정이 있으면 " : "계정이 없으면 " }),
-      el("a", { href: signup ? "#설정/로그인" : "#설정/회원가입", text: signup ? "로그인" : "회원가입" })]));
+      el("a", { href: signup ? "#설정/로그인" : "#설정/회원가입", text: signup ? "로그인" : "가입 신청" })]));
+    if (gateOn()) page.appendChild(gateSkipBtn());
     return [page];
   }
 
@@ -20554,7 +20564,7 @@ exports.withFuzzing = withFuzzing;
     page.appendChild(syncSection());
     page.appendChild(el("h2", { text: "비공식 팬아트 고지" }));
     page.appendChild(el("p", { class: "fan-notice", text: "이 앱에 나오는 버추얼 유튜버 관련 그림·이름·대사는 팬이 만든 비공식 2차 창작이며, 각 소속사·본인과 관계가 없습니다. 각 캐릭터에 대한 모든 권리는 해당 소속사(이세계아이돌: 왁엔터테인먼트, 스텔라이브: 스텔라이브/Brave group 등)와 본인에게 있습니다. 비상업 개인 학습용이며 수익이 없습니다. 권리자가 요청하면 즉시 삭제합니다." }));
-    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.48" }));
+    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.49" }));
     return [page];
   }
 
@@ -20674,6 +20684,11 @@ exports.withFuzzing = withFuzzing;
     if (tab !== "홈") _mainMsg = "";
     if (!(tab === "설정" && route.a === "승인대기")) _pendingCred = null;
     if (_needLogin && authMaybeRedirect()) return;
+    var gateView = false;
+    if (gateOn()) {
+      if (tab === "설정" && /^(로그인|회원가입|승인대기|거절)$/.test(route.a)) gateView = true;
+      else { setTimeout(function () { var pu = _pendingUser || syncMeta().pendingUser; go("설정", pu ? "승인대기" : "로그인"); }, 0); return; }
+    }
     var kids;
     var immersive = false;
     var game = false;
@@ -20724,7 +20739,7 @@ exports.withFuzzing = withFuzzing;
         kids = viewGameStart();
       }
     } else kids = viewPilgi(route);
-    shell(tab, kids, { immersive: immersive, game: game, scene: scene, fx: fx });
+    shell(tab, kids, { immersive: immersive || gateView, game: game, scene: scene, fx: fx });
   }
 
   /* 테스트용: 브라우저가 해시 변경을 제한(과다 이동 차단)해도 마지막 go 경로를 그대로 그린다 */
