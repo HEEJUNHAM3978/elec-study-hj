@@ -2571,7 +2571,29 @@ html.ox-no-scroll main {
 .shop-exchange{margin-top:12px;width:100%}
 
 /* 0.7.39 그림 배경 · 등급 카드 (뽑기로 얻는다) */
-/* 0.7.41 카드 프레임: 얇은 테두리(4~6px) + 모서리 장식 그림 + 위쪽 문장(크레스트). 뽑기로 얻는다 */
+/* 0.7.41 강화 · 무한 모드 */
+.up-list { display: grid; gap: 0.5rem; margin: 0.4rem 0 1rem; }
+.up-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.7rem; border-radius: 12px; background: #fff; border: 1px solid #dbe3ee; }
+.up-row.is-max { background: linear-gradient(135deg, #fff8e1, #fff); border-color: #f2c94c; }
+.up-info { flex: 1 1 auto; min-width: 0; }
+.up-name { margin: 0; font-size: 0.95rem; color: #0f2a4a; }
+.up-lv { color: #2f6fe0; font-weight: 800; font-size: 0.85rem; }
+.up-row.is-max .up-lv { color: #c47f00; }
+.up-pips { display: flex; gap: 3px; margin: 0.25rem 0; }
+.up-pips i { width: 16px; height: 6px; border-radius: 3px; background: #e2e8f0; }
+.up-pips i.is-on { background: linear-gradient(90deg, #4f8cff, #7fd1ff); }
+.up-row.is-max .up-pips i.is-on { background: linear-gradient(90deg, #f2a900, #ffd76a); }
+.up-desc { margin: 0; font-size: 0.78rem; line-height: 1.35; color: #4b5b70; word-break: keep-all; }
+.up-row .up-buy { flex: 0 0 auto !important; width: auto !important; min-width: 5.6rem; max-width: 7rem; margin: 0 !important; padding-left: 0.6rem; padding-right: 0.6rem; }
+.up-row .up-info { flex: 1 1 0 !important; width: auto !important; }
+.up-rates { margin-top: 0.2rem; }
+.diff-pill.diff-endless { background: linear-gradient(135deg, #7c3aed, #db2777); color: #fff; }
+.stage-endless { margin-top: 0.6rem; background: linear-gradient(135deg, #6d28d9, #be185d) !important; color: #fff !important; border-color: transparent !important; }
+.reigns-g-shield { position: absolute; top: -0.35rem; right: 0.1rem; font-size: 0.72rem; font-weight: 900; color: #93c5fd; animation: reigns-delta 1.2s ease-out both; pointer-events: none; }
+.endless-best { text-align: center; margin: 0.3rem 0; font-size: 1rem; color: #e2e8f0; }
+.endless-best.is-new b { color: #fde68a; }
+.shop-upgrade { width: 100%; margin-top: 0.5rem; }
+/* 0.7.40 카드 프레임: 얇은 테두리(4~6px) + 모서리 장식 그림 + 위쪽 문장(크레스트). 뽑기로 얻는다 */
 html[data-card-r="common"], .look-cell[data-tier="common"], .lg-stage[data-tier="common"] { --tcol: #8a94a6; --tcol2: #c3cad6; }
 html[data-card-r="rare"], .look-cell[data-tier="rare"], .lg-stage[data-tier="rare"] { --tcol: #2f6fe0; --tcol2: #7fb0ff; }
 html[data-card-r="epic"], .look-cell[data-tier="epic"], .lg-stage[data-tier="epic"] { --tcol: #8a3fd0; --tcol2: #d29bff; }
@@ -18867,6 +18889,7 @@ exports.withFuzzing = withFuzzing;
     if (!Array.isArray(w.pref.groups) || !w.pref.groups.length) w.pref.groups = REIGNS_GROUPS.map(function (g) { return g.id; });
     lookWallet(w);
     if (!w.migrated) { migrateLegacy0735(w); w.migrated = 35; }
+    ensureUp(w);
     return w;
   }
   /* 0.7.39: 옛 OX 게임·개념카드 게임 저장을 합친 게임으로 옮긴다 */
@@ -19021,15 +19044,17 @@ exports.withFuzzing = withFuzzing;
     var D = STAGE_DIFFS[s.diff] || STAGE_DIFFS.normal;
     var n = (s.groups || []).length || 6;
     var score = s.score || 0;
-    if (!win) return { win: false, coins: Math.floor(score / 3), score: score };
+    var cm = coinMult();
+    if (!win) return { win: false, coins: Math.round(Math.floor(score / 3) * cm), score: score, cm: cm };
     var base = Math.round(STAGE_BASE_FULL * n / 6);
     var bonus = Math.floor(score / 2);
     var all = n >= 6 ? 1.1 : 1;
-    var coins = Math.round((base + bonus) * D.mult * all);
-    return { win: true, coins: coins, base: base, n: n, bonus: bonus, score: score, mult: D.mult, all: all, diff: D.id };
+    var coins = Math.round((base + bonus) * D.mult * all * cm);
+    return { win: true, coins: coins, base: base, n: n, bonus: bonus, score: score, mult: D.mult, all: all, cm: cm, diff: D.id };
   }
   function awardStage(s, win) {
     if (!s || s.awarded) return;
+    if (s.mode === "endless") { awardEndless(s); return; }
     var w = ensureWallet();
     var r = stageCoins(s, win);
     w.coins += r.coins;
@@ -19042,8 +19067,186 @@ exports.withFuzzing = withFuzzing;
     s.result = r;
     s.awarded = true;
   }
-  function stageTotal(s) { return s.total || ((s.groups || []).length || 6) * STAGE_PER_GROUP; }
+  function stageTotal(s) { if (s && s.mode === "endless") return Infinity; return s.total || ((s.groups || []).length || 6) * STAGE_PER_GROUP; }
 
+  /* ---- 0.7.41 코인 강화(직접 구매, 뽑기 아님)와 무한 모드 ---- */
+  var UPGRADES = [
+    { id: "hp", label: "과목별 최대 체력", unit: "", max: 5, cost: [150, 250, 400, 600, 900], per: true,
+      desc: function (lv) { return "최대 체력 " + (10 + lv); } },
+    { id: "heal", label: "회복량", max: 2, cost: [400, 900],
+      desc: function (lv) { return "회복 문제를 맞히면 +" + (1 + lv) + " (최대 체력은 넘지 않는다)"; } },
+    { id: "healP", label: "회복 문제 확률", max: 5, cost: [200, 350, 550, 800, 1100],
+      desc: function (lv) { return "보통 기준 " + Math.round((STAGE_DIFFS.normal.heal + 0.03 * lv) * 100) + "% (레벨마다 +3%p)"; } },
+    { id: "luck", label: "카드 뽑기 행운", max: 6, cost: [300, 450, 650, 900, 1200, 1600],
+      desc: function (lv) { var b = tierBase(lv); return "일반 " + b.common + " · 레어 " + b.rare + " · 에픽 " + b.epic + " · 전설 " + b.legend + "%"; } },
+    { id: "coin", label: "코인 획득량", max: 5, cost: [300, 500, 800, 1200, 1700],
+      desc: function (lv) { return "판 보상 +" + (lv * 5) + "% (레벨마다 +5%)"; } },
+    { id: "shield", label: "방패", max: 5, cost: [250, 400, 650, 950, 1300],
+      desc: function (lv) { return "오답일 때 " + (lv * 5) + "% 확률로 게이지 감소를 막는다 (레벨마다 +5%p)"; } }
+  ];
+  var UP_BY = {}; UPGRADES.forEach(function (u) { UP_BY[u.id] = u; });
+  /* 저장 키: wallet.up (upV 1). 예전 저장에는 없으므로 0레벨로 채운다 */
+  function ensureUp(w) {
+    w = w || ensureWallet();
+    var u = w.up;
+    if (!u || typeof u !== "object") u = w.up = {};
+    u.upV = 1;
+    if (!u.hp || typeof u.hp !== "object") u.hp = {};
+    REIGNS_GROUPS.forEach(function (g) { var v = Math.floor(Number(u.hp[g.id])); u.hp[g.id] = v >= 0 ? Math.min(UP_BY.hp.max, v) : 0; });
+    UPGRADES.forEach(function (d) { if (d.per) return; var v = Math.floor(Number(u[d.id])); u[d.id] = v >= 0 ? Math.min(d.max, v) : 0; });
+    var e = w.endless;
+    if (!e || typeof e !== "object") e = w.endless = {};
+    ["best", "bestScore", "runs"].forEach(function (k) { var v = Math.floor(Number(e[k])); e[k] = v >= 0 ? v : 0; });
+    return u;
+  }
+  function upLv(id, gid) { var u = ensureUp(); return id === "hp" ? (u.hp[gid] || 0) : (u[id] || 0); }
+  function upCost(id, gid) { var d = UP_BY[id], lv = upLv(id, gid); return lv >= d.max ? null : d.cost[lv]; }
+  function buyUpgrade(id, gid) {
+    var w = ensureWallet(), u = ensureUp(w), c = upCost(id, gid);
+    if (c == null || w.coins < c) return false;
+    if (id === "hp" && !REIGNS_GROUPS.some(function (g) { return g.id === gid; })) return false;
+    w.coins -= c;
+    if (id === "hp") u.hp[gid] += 1; else u[id] += 1;
+    saveState(state);
+    return true;
+  }
+  function maxHp(gid) { return 10 + upLv("hp", gid); }
+  function healAmt() { return 1 + upLv("heal"); }
+  function healChance(D) { return Math.min(0.5, (D ? D.heal : 0.15) + 0.03 * upLv("healP")); }
+  function shieldChance() { return 0.05 * upLv("shield"); }
+  function coinMult() { return 1 + 0.05 * upLv("coin"); }
+  /* 행운: 레벨마다 일반 −2.5, 레어 +1, 에픽 +1, 전설 +0.5 (MAX 6: 35/36/21/8) */
+  function tierBase(lv) {
+    if (lv == null) lv = upLv("luck");
+    return { common: TIER_BASE.common - 2.5 * lv, rare: TIER_BASE.rare + lv, epic: TIER_BASE.epic + lv, legend: TIER_BASE.legend + 0.5 * lv };
+  }
+  /* 무한 모드: 라운드가 지날수록 문제가 어려워지고 오답 감점이 커진다 */
+  var ENDLESS_COIN_CAP = 300;
+  function endlessLevel(idx) { return Math.floor((idx || 0) / 10) + 1; }
+  function endlessRule(idx) {
+    var lv = endlessLevel(idx);
+    return { lv: lv, diff: lv <= 1 ? "easy" : lv <= 3 ? "normal" : "hard", dmg: Math.min(4, 1 + Math.floor((idx || 0) / 15)), pen: Math.min(3, Math.floor((idx || 0) / 20)) };
+  }
+  function endlessCoins(s) {
+    var rounds = Math.max(0, s.index || 0) + 1, score = s.score || 0;
+    var raw = Math.floor(rounds * 2.5 + score / 4);
+    var capped = Math.min(ENDLESS_COIN_CAP, raw);
+    var m = coinMult();
+    return { endless: true, win: false, rounds: rounds, score: score, raw: raw, capped: capped, mult: m, coins: Math.round(capped * m) };
+  }
+  function startEndless(opts) {
+    var w = ensureWallet(); ensureUp(w);
+    opts = opts || {};
+    var groups = (opts.groups && opts.groups.length ? opts.groups : w.pref.groups).filter(function (g) { return REIGNS_GROUPS.some(function (x) { return x.id === g; }); });
+    if (!groups.length) groups = REIGNS_GROUPS.map(function (x) { return x.id; });
+    var gauges = {};
+    REIGNS_GROUPS.forEach(function (x) { gauges[x.id] = upLv("hp", x.id) > 0 ? maxHp(x.id) : STAGE_DIFFS.normal.start; });
+    state.reigns = {
+      mode: "endless", gauges: gauges, g10: true, score: 0, days: 0,
+      best: (state.reigns && state.reigns.best) || 0,
+      diff: "easy", groups: groups, total: 0,
+      queue: buildStageQueue("easy", groups), index: 0, revealed: false, lastOk: null, lastDelta: 0,
+      over: false, cleared: false, awarded: false, wrongIds: [], who: pickCramWho(0), talk: null, heal: false
+    };
+    w.endless.runs += 1;
+    saveState(state);
+    go("복습", "개념카드세션");
+  }
+  function endlessFill(s) {
+    if (!s || s.mode !== "endless") return;
+    if (s.queue.length - s.index > 3) return;
+    var R = endlessRule(s.queue.length);
+    var recent = s.queue.slice(-40);
+    var more = buildStageQueue(R.diff, s.groups);
+    var add = more.filter(function (id) { return recent.indexOf(id) < 0 && recent.indexOf(id.split("|")[0]) < 0; });
+    if (add.length < 5) add = more;
+    s.queue = s.queue.concat(add);
+  }
+  function awardEndless(s) {
+    if (!s || s.awarded) return;
+    var w = ensureWallet(); ensureUp(w);
+    var r = endlessCoins(s);
+    w.coins += r.coins;
+    r.newBest = false;
+    if (r.rounds > w.endless.best || (r.rounds === w.endless.best && r.score > w.endless.bestScore)) {
+      r.newBest = w.endless.best > 0 || r.rounds > 0;
+      w.endless.best = r.rounds; w.endless.bestScore = r.score;
+    }
+    r.best = w.endless.best; r.bestScore = w.endless.bestScore;
+    s.result = r;
+    s.awarded = true;
+  }
+  function viewUpgrade() {
+    var w = ensureWallet(); ensureUp(w);
+    var page = el("div", { class: "shop upgrade-shop" });
+    page.appendChild(el("h1", { text: "강화" }));
+    page.appendChild(walletStrip(w));
+    page.appendChild(el("p", { class: "hub-note", text: "코인으로 바로 산다(뽑기 아님). 레벨이 오를수록 비용이 커지고, MAX가 되면 더 못 올린다." }));
+    if (_shopMsg) page.appendChild(el("p", { class: "shop-msg", role: "status", text: _shopMsg }));
+    function row(d, gid, label) {
+      var lv = upLv(d.id, gid), c = upCost(d.id, gid), isMax = c == null;
+      var pips = el("span", { class: "up-pips", "aria-hidden": "true" });
+      for (var i = 0; i < d.max; i++) pips.appendChild(el("i", { class: i < lv ? "is-on" : "" }));
+      return el("div", { class: "up-row" + (isMax ? " is-max" : ""), "data-up": d.id + (gid ? "-" + gid : "") }, [
+        el("div", { class: "up-info" }, [
+          el("p", { class: "up-name" }, [el("b", { text: label || d.label }), el("span", { class: "up-lv num", text: isMax ? " MAX" : " Lv." + lv + "/" + d.max })]),
+          pips,
+          el("p", { class: "up-desc", text: d.desc(lv) + (isMax ? "" : "  →  다음: " + d.desc(lv + 1)) })
+        ]),
+        el("button", { class: "btn btn-small up-buy", type: "button", disabled: (isMax || w.coins < c) ? true : null, text: isMax ? "MAX" : c + "코인",
+          onclick: function () { if (buyUpgrade(d.id, gid)) _shopMsg = (label || d.label) + " Lv." + (lv + 1) + " 강화 완료."; render(); } })
+      ]);
+    }
+    page.appendChild(el("h2", { class: "hub-h", text: "과목별 최대 체력" }));
+    page.appendChild(el("p", { class: "hub-note", text: "기본 10. 1레벨 이상 올린 과목은 스테이지·무한 모드를 최대 체력으로 시작한다." }));
+    var box = el("div", { class: "up-list" });
+    REIGNS_GROUPS.forEach(function (g) { box.appendChild(row(UP_BY.hp, g.id, g.label + " 최대 체력")); });
+    page.appendChild(box);
+    page.appendChild(el("h2", { class: "hub-h", text: "회복 · 보조" }));
+    var box2 = el("div", { class: "up-list" });
+    ["heal", "healP", "shield", "coin", "luck"].forEach(function (id) { box2.appendChild(row(UP_BY[id])); });
+    page.appendChild(box2);
+    var rt = cardRates();
+    page.appendChild(el("p", { class: "hub-note up-rates", text: "지금 카드 뽑기 확률: " + TIER_ORDER.map(function (t) { return TIER_LABEL[t] + " " + rt[t].pct + "%"; }).join(" · ") + " (다 모은 등급은 빠진다)" }));
+    page.appendChild(el("button", { class: "btn btn-secondary review-cta", type: "button", text: "코스튬으로", onclick: function () { _shopMsg = ""; go("코스튬"); } }));
+    return [page];
+  }
+  function viewEndlessOver() {
+    var s = state.reigns;
+    if (!s.awarded) awardEndless(s);
+    var w = ensureWallet(), r = s.result || endlessCoins(s);
+    var reach = (s.index || 0) + 1;
+    var play = el("div", { class: "stage-result is-over is-endless reigns-play" });
+    play.appendChild(el("h1", { text: "무한 모드 결과" }));
+    play.appendChild(el("div", { class: "result-meta" }, [diffPill(s), el("span", { class: "num", text: "도달 " + reach + "라운드 · 점수 " + (s.score || 0) })]));
+    play.appendChild(el("div", { class: "result-hero" }, [dressImg(s.who || "hangyeol", "is-result is-sad")]));
+    play.appendChild(el("p", { class: "result-say reigns-say" }, [el("span", { html: s.talk || "게이지가 바닥났다." })]));
+    play.appendChild(el("p", { class: "endless-best" + (r.newBest ? " is-new" : "") }, [
+      el("b", { text: r.newBest ? "최고 기록 갱신!" : "최고 기록" }),
+      el("span", { class: "num", text: " " + w.endless.best + "라운드 · 점수 " + w.endless.bestScore })
+    ]));
+    play.appendChild(el("p", { class: "coin-big" }, [el("i", { class: "coin-dot", "aria-hidden": "true" }), el("b", { class: "num", text: "+" + r.coins }), el("span", { text: " 코인" })]));
+    var box = el("div", { class: "coin-calc" });
+    [["도달 라운드", r.rounds + " × 2.5 = " + Math.floor(r.rounds * 2.5)], ["점수 보너스", "점수 " + r.score + " ÷ 4 = " + Math.floor(r.score / 4)],
+     ["상한", ENDLESS_COIN_CAP + (r.raw > ENDLESS_COIN_CAP ? " (상한에 걸림)" : "")]].concat(r.mult > 1 ? [["코인 강화", "×" + r.mult]] : []).forEach(function (x) {
+      box.appendChild(el("p", { class: "coin-row" }, [el("span", { text: x[0] }), el("b", { class: "num", text: x[1] })]));
+    });
+    box.appendChild(el("p", { class: "coin-row is-sum" }, [el("span", { text: "합계" }), el("b", { class: "num", text: r.capped + (r.mult > 1 ? " × " + r.mult : "") + " = " + r.coins })]));
+    play.appendChild(box);
+    play.appendChild(el("p", { class: "hub-note", text: "무한 모드는 클리어 수(뽑기권)에 들어가지 않는다." }));
+    if ((s.wrongIds || []).length) {
+      play.appendChild(el("h2", { class: "reigns-over-h", text: "틀린 카드" }));
+      var ul = el("ul", { class: "over-wrong" });
+      (s.wrongIds || []).slice(0, 8).forEach(function (id) { var it = lookupPlayItem(id); if (it) ul.appendChild(el("li", { text: (it.title || subjectLabel(it.subject)) })); });
+      play.appendChild(ul);
+    }
+    play.appendChild(el("div", { class: "result-btns" }, [
+      el("button", { class: "btn review-cta", type: "button", text: "다시 도전", onclick: function () { startEndless({ groups: s.groups }); } }),
+      el("button", { class: "btn btn-secondary review-cta", type: "button", text: "강화", onclick: function () { _shopMsg = ""; go("코스튬", "강화"); } }),
+      el("button", { class: "btn btn-secondary review-cta", type: "button", text: "게임 홈", onclick: function () { go("복습"); } })
+    ]));
+    return [play];
+  }
   function startReigns(opts) {
     var w = ensureWallet();
     opts = opts || {};
@@ -19052,7 +19255,7 @@ exports.withFuzzing = withFuzzing;
     if (!groups.length) groups = REIGNS_GROUPS.map(function (x) { return x.id; });
     var D = STAGE_DIFFS[diff];
     var gauges = {};
-    REIGNS_GROUPS.forEach(function (x) { gauges[x.id] = D.start; });
+    REIGNS_GROUPS.forEach(function (x) { gauges[x.id] = upLv("hp", x.id) > 0 ? maxHp(x.id) : D.start; });
     state.reigns = {
       gauges: gauges, g10: true, score: 0, days: 0,
       best: (state.reigns && state.reigns.best) || 0,
@@ -19129,11 +19332,17 @@ exports.withFuzzing = withFuzzing;
       el("span", { text: "스테이지 시작" }),
       el("span", { class: "review-cta-sub", text: D0.label + " · 과목마다 10장" })
     ]));
+    var EB = w.endless || { best: 0, bestScore: 0 };
+    hub.appendChild(el("button", { class: "btn review-cta stage-endless", type: "button", disabled: n ? null : true, onclick: function () { startEndless(); } }, [
+      el("span", { text: "무한 모드" }),
+      el("span", { class: "review-cta-sub", text: "고른 과목 · 게이지가 0이 될 때까지 · 최고 " + EB.best + "라운드 / " + EB.bestScore + "점" })
+    ]));
+    hub.appendChild(el("p", { class: "hub-note", text: "무한 모드는 라운드가 오를수록 문제가 어려워지고 오답 감점이 커진다. 코인은 도달 라운드에 비례하고 한 판 최대 " + ENDLESS_COIN_CAP + "코인(강화 전). 클리어 수에는 들어가지 않는다." }));
     var s = state.reigns;
     if (s && s.queue && !s.over && !s.cleared && s.index < stageTotal(s)) {
       hub.appendChild(el("button", { class: "btn btn-secondary review-cta stage-resume", type: "button", onclick: function () { go("복습", "개념카드세션"); } }, [
         el("span", { text: "이어하기" }),
-        el("span", { class: "review-cta-sub", text: "라운드 " + (s.index + 1) + "/" + stageTotal(s) + " · " + (STAGE_DIFFS[s.diff] || STAGE_DIFFS.normal).label })
+        el("span", { class: "review-cta-sub", text: s.mode === "endless" ? "무한 모드 · 라운드 " + (s.index + 1) : "라운드 " + (s.index + 1) + "/" + stageTotal(s) + " · " + (STAGE_DIFFS[s.diff] || STAGE_DIFFS.normal).label })
       ]));
     }
     kids.push(hub);
@@ -19141,6 +19350,7 @@ exports.withFuzzing = withFuzzing;
   }
 
   function ensureReignsQueue(s) {
+    if (s && s.mode === "endless") { endlessFill(s); return; }
     var total = stageTotal(s);
     if (s.queue && s.index >= s.queue.length && !s.over && s.index < total) {
       var more = buildStageQueue(s.diff, s.groups);
@@ -19162,7 +19372,8 @@ exports.withFuzzing = withFuzzing;
     s.who = pickCramWho(s.index);
     s.talk = null;
     s.face = "normal";
-    s.heal = Math.random() < D.heal;
+    if (s.mode === "endless") s.diff = endlessRule(s.index).diff;
+    s.heal = Math.random() < healChance(s.mode === "endless" ? STAGE_DIFFS.normal : D);
     ensureReignsQueue(s);
     saveState(state);
     render();
@@ -19174,6 +19385,7 @@ exports.withFuzzing = withFuzzing;
     migrateGauges(s);
     if (!s.groups) s.groups = REIGNS_GROUPS.map(function (x) { return x.id; });
     var D = STAGE_DIFFS[s.diff] || STAGE_DIFFS.normal;
+    if (s.mode === "endless") { var ER = endlessRule(s.index); D = { start: 6, dmg: ER.dmg, pen: ER.pen, heal: STAGE_DIFFS.normal.heal }; }
     var id = s.queue[s.index];
     var item = lookupPlayItem(id);
     if (!item) { reignsAdvance(); return; }
@@ -19187,9 +19399,9 @@ exports.withFuzzing = withFuzzing;
     var healGid = null;
     if (ok && s.heal) {
       healGid = g.id;
-      if (cur >= 10) {
+      if (cur >= maxHp(g.id)) {
         var low = null;
-        s.groups.forEach(function (gid) { var v = s.gauges[gid]; if (v < 10 && (low == null || v < s.gauges[low])) low = gid; });
+        s.groups.forEach(function (gid) { var v = s.gauges[gid]; if (v < maxHp(gid) && (low == null || v < s.gauges[low])) low = gid; });
         healGid = low;
       }
     }
@@ -19197,11 +19409,13 @@ exports.withFuzzing = withFuzzing;
       g = REIGNS_GROUPS.filter(function (x) { return x.id === healGid; })[0] || g;
       cur = s.gauges[g.id];
     }
-    var next = ok ? Math.min(10, cur + (healGid ? 1 : 0)) : Math.max(0, cur - D.dmg);
+    var blocked = !ok && Math.random() < shieldChance();
+    var next = ok ? Math.min(Math.max(cur, maxHp(g.id)), cur + (healGid ? healAmt() : 0)) : (blocked ? cur : Math.max(0, cur - D.dmg));
+    s.lastShield = blocked;
     s.gauges[g.id] = next;
     s.lastGid = g.id;
     s.lastHeal = !!(ok && healGid);
-    s.lastDelta = ok ? next - cur : -D.dmg;
+    s.lastDelta = ok ? next - cur : (blocked ? 0 : -D.dmg);
     var pts = itemImportance(item);
     if (ok) { s.lastPts = pts; s.score = (s.score || 0) + pts; }
     else { var lose = Math.min(s.score || 0, D.pen); s.lastPts = -lose; s.score = (s.score || 0) - lose; }
@@ -19229,7 +19443,7 @@ exports.withFuzzing = withFuzzing;
         s.face = "sad"; s.talk = "게이지가 바닥났다. 틀린 카드를 다시 보자.";
       }
       awardStage(s, false);
-    } else if (s.index >= stageTotal(s) - 1) {
+    } else if (s.mode !== "endless" && s.index >= stageTotal(s) - 1) {
       s.cleared = true;
       var cw = CRAM_CHARS[Math.floor(Math.random() * CRAM_CHARS.length)].id;
       s.clearWho = cw;
@@ -19256,7 +19470,8 @@ exports.withFuzzing = withFuzzing;
     var row = el("div", { class: "reigns-gauges", "aria-label": "과목 게이지" });
     REIGNS_GROUPS.forEach(function (g) {
       var v = s.gauges[g.id] == null ? 5 : s.gauges[g.id];
-      var tone = v <= 2 ? "is-low" : v >= 9 ? "is-hot" : (v <= 4 ? "is-mid" : "");
+      var mx = maxHp(g.id);
+      var tone = v <= 2 ? "is-low" : v >= mx - 1 ? "is-hot" : (v <= 4 ? "is-mid" : "");
       var offG = s.groups && s.groups.indexOf(g.id) < 0;
       var cell = el("div", { class: "reigns-g " + tone + (offG ? " is-off" : ""), "data-gid": g.id, "aria-hidden": offG ? "true" : null });
       var icon = el("div", { class: "reigns-g-icon" });
@@ -19269,9 +19484,10 @@ exports.withFuzzing = withFuzzing;
       if (s.revealed && s.lastGid === g.id && s.lastDelta) {
         cell.appendChild(el("span", { class: "reigns-g-delta " + (s.lastDelta > 0 ? "is-up" : "is-down"), text: (s.lastDelta > 0 ? "+" : "−") + Math.abs(s.lastDelta) }));
       }
+      if (s.revealed && s.lastGid === g.id && s.lastShield) cell.appendChild(el("span", { class: "reigns-g-shield", text: "방패!" }));
       var track = el("div", { class: "reigns-g-track" });
       var fill = el("div", { class: "reigns-g-fill" });
-      fill.style.width = (v * 10) + "%";
+      fill.style.width = Math.min(100, v / mx * 100).toFixed(1) + "%";
       track.appendChild(fill);
       cell.appendChild(track);
       var dot = el("span", { class: "reigns-g-dot" + (hintId === g.id ? " is-hint" : "") });
@@ -19340,7 +19556,7 @@ exports.withFuzzing = withFuzzing;
     play.appendChild(el("div", { class: "cram-top" }, [
       el("button", { class: "review-exit", type: "button", text: "종료", onclick: function () { go("복습"); } }),
       el("p", { class: "cram-count", text: item.title || subjectLabel(item.subject) }),
-      el("span", { class: "round-pill num", text: (s.index + 1) + "/" + stageTotal(s) }),
+      el("span", { class: "round-pill num", text: s.mode === "endless" ? "∞ " + (s.index + 1) : (s.index + 1) + "/" + stageTotal(s) }),
       diffPill(s),
       calcBtn()
     ]));
@@ -19353,7 +19569,7 @@ exports.withFuzzing = withFuzzing;
     card.appendChild(el("span", { class: "reigns-choice is-x" + (isCh ? "" : " is-big"), html: leftLabel }));
     card.appendChild(el("span", { class: "reigns-choice is-o" + (isCh ? "" : " is-big"), html: rightLabel }));
     var imp = itemImportance(item);
-    if (s.heal && !s.revealed) card.appendChild(el("span", { class: "reigns-heal", text: "회복 문제 +1" }));
+    if (s.heal && !s.revealed) card.appendChild(el("span", { class: "reigns-heal", text: "회복 문제 +" + healAmt() }));
     card.classList.toggle("is-heal", !!s.heal);
     card.appendChild(el("span", { class: "reigns-imp imp-" + imp, "aria-label": "중요도 " + imp + "점", text: imp + "점" }));
     var port = el("div", { class: "reigns-portrait" });
@@ -19388,7 +19604,7 @@ exports.withFuzzing = withFuzzing;
     ]));
     play.appendChild(el("div", { class: "reigns-days-wrap" }, [
       el("p", { class: "kicker", text: "라운드" }),
-      el("p", { class: "num reigns-round", text: (s.index + 1) + "/" + stageTotal(s) }),
+      el("p", { class: "num reigns-round", text: s.mode === "endless" ? String(s.index + 1) : (s.index + 1) + "/" + stageTotal(s) }),
       el("p", { class: "kicker", text: "점수" }),
       el("p", { class: "num reigns-score", text: String(s.score || 0) + (s.revealed && s.lastPts ? " (" + (s.lastPts > 0 ? "+" : "−") + Math.abs(s.lastPts) + ")" : "") })
     ]));
@@ -19456,6 +19672,7 @@ exports.withFuzzing = withFuzzing;
 
   /* ---- 0.7.39 결과 · 클리어 · 코스튬 · 뽑기 · 설정 · 계산기 팝업 ---- */
   function diffPill(s) {
+    if (s && s.mode === "endless") { var ER = endlessRule(s.index); return el("span", { class: "diff-pill diff-endless", text: "무한 " + ER.lv + "단계" }); }
     var D = STAGE_DIFFS[(s && s.diff)] || STAGE_DIFFS.normal;
     return el("span", { class: "diff-pill diff-" + D.id, text: D.label });
   }
@@ -19469,11 +19686,12 @@ exports.withFuzzing = withFuzzing;
         ["난이도", (STAGE_DIFFS[r.diff] || STAGE_DIFFS.normal).label + " ×" + r.mult]
       ];
       if (r.all > 1) rows.push(["6과목 전부", "×1.1"]);
+      if (r.cm > 1) rows.push(["코인 강화", "×" + r.cm]);
       rows.forEach(function (x) { box.appendChild(el("p", { class: "coin-row" }, [el("span", { text: x[0] }), el("b", { class: "num", text: x[1] })])); });
       box.appendChild(el("p", { class: "coin-row is-sum" }, [el("span", { text: "합계" }),
-        el("b", { class: "num", text: "(" + r.base + " + " + r.bonus + ") × " + r.mult + (r.all > 1 ? " × 1.1" : "") + " = " + r.coins })]));
+        el("b", { class: "num", text: "(" + r.base + " + " + r.bonus + ") × " + r.mult + (r.all > 1 ? " × 1.1" : "") + (r.cm > 1 ? " × " + r.cm : "") + " = " + r.coins })]));
     } else {
-      box.appendChild(el("p", { class: "coin-row is-sum" }, [el("span", { text: "실패 보상" }), el("b", { class: "num", text: "점수 " + r.score + " ÷ 3 = " + r.coins })]));
+      box.appendChild(el("p", { class: "coin-row is-sum" }, [el("span", { text: "실패 보상" }), el("b", { class: "num", text: "점수 " + r.score + " ÷ 3" + (r.cm > 1 ? " × " + r.cm : "") + " = " + r.coins })]));
     }
     return box;
   }
@@ -19508,6 +19726,7 @@ exports.withFuzzing = withFuzzing;
   }
   function viewReignsOver() {
     var s = state.reigns || { days: 0, wrongIds: [], who: "hangyeol", face: "sad", talk: "" };
+    if (s.mode === "endless" && s.queue) return viewEndlessOver();
     if (s.queue && !s.awarded && s.over) awardStage(s, false);
     var w = ensureWallet(), r = s.result || { win: false, coins: 0, score: s.score || 0 };
     var play = el("div", { class: "stage-result is-over reigns-play" });
@@ -19667,9 +19886,9 @@ exports.withFuzzing = withFuzzing;
   function lookLeftIds(kind) { var w = ensureWallet(); return LOOKS[kind].ids.filter(function (i) { return w.shop[kind].indexOf(i) < 0; }); }
   /* 카드 뽑기 확률: 기본 50/30/15/5, 다 모은 등급은 빼고 남은 등급끼리 다시 맞춘다 */
   function cardRates() {
-    var left = lookLeftIds("card"), tot = 0, out = {};
-    TIER_ORDER.forEach(function (t) { var n = left.filter(function (i) { return LOOKS.card.tiers[i] === t; }).length; out[t] = { left: n, pct: 0 }; if (n) tot += TIER_BASE[t]; });
-    TIER_ORDER.forEach(function (t) { out[t].pct = (out[t].left && tot) ? Math.round(TIER_BASE[t] * 1000 / tot) / 10 : 0; });
+    var left = lookLeftIds("card"), tot = 0, out = {}, TB = tierBase();
+    TIER_ORDER.forEach(function (t) { var n = left.filter(function (i) { return LOOKS.card.tiers[i] === t; }).length; out[t] = { left: n, pct: 0 }; if (n) tot += TB[t]; });
+    TIER_ORDER.forEach(function (t) { out[t].pct = (out[t].left && tot) ? Math.round(TB[t] * 1000 / tot) / 10 : 0; });
     return out;
   }
   function lookPull(kind, rng) {
@@ -19782,6 +20001,7 @@ exports.withFuzzing = withFuzzing;
     if (sub === "뽑기") return viewGacha();
     if (sub === "배경뽑기") return viewLookGacha("bg");
     if (sub === "카드뽑기") return viewLookGacha("card");
+    if (sub === "강화") return viewUpgrade();
     var kids = [];
     var page = el("div", { class: "shop" });
     page.appendChild(el("h1", { text: "코스튬" }));
@@ -19808,6 +20028,7 @@ exports.withFuzzing = withFuzzing;
       el("button", { class: "btn btn-secondary shop-pull-bg", type: "button", disabled: (lookLeftIds("bg").length && w.coins >= LOOK_PULL_PRICE) ? null : true, text: lookLeftIds("bg").length ? "배경 뽑기 (" + LOOK_PULL_PRICE + "코인)" : "배경 모두 모음", onclick: function () { _lookAnim = null; go("코스튬", "배경뽑기"); } }),
       el("button", { class: "btn btn-secondary shop-pull-card", type: "button", disabled: (lookLeftIds("card").length && w.coins >= LOOK_PULL_PRICE) ? null : true, text: lookLeftIds("card").length ? "카드 뽑기 (" + LOOK_PULL_PRICE + "코인)" : "카드 모두 모음", onclick: function () { _lookAnim = null; go("코스튬", "카드뽑기"); } })
     ]));
+    page.appendChild(el("button", { class: "btn shop-upgrade", type: "button", onclick: function () { _shopMsg = ""; go("코스튬", "강화"); } }, [el("span", { text: "강화 (코인으로 바로 구매)" })]));
     if (_shopMsg) page.appendChild(el("p", { class: "shop-msg", role: "status", text: _shopMsg }));
     var grid = el("div", { class: "shop-grid" });
     for (var i = 0; i < 10; i++) (function (i) {
@@ -19885,7 +20106,7 @@ exports.withFuzzing = withFuzzing;
     ]));
     page.appendChild(el("h2", { text: "기록" }));
     page.appendChild(el("p", { class: "hub-note", text: "누적 클리어 " + w.clears + "판 · 모은 옷 " + CRAM_CHARS.reduce(function (a, c) { return a + w.owned[c.id].length; }, 0) + "/30벌 · 틀린 카드 " + ((state.cramWrong || []).length + (state.oxWrong || []).length) + "장(어려움에서 다시 나온다)" }));
-    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.40" }));
+    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.41" }));
     return [page];
   }
 
@@ -19952,7 +20173,7 @@ exports.withFuzzing = withFuzzing;
   window.ElecStudyTest.startReigns = startReigns;
   window.ElecStudyTest.OX_ITEMS = OX_ITEMS;
   window.ElecStudyTest.stage = { DIFFS: STAGE_DIFFS, COSTUMES: COSTUMES, PRICE: COSTUME_PRICE, PER: STAGE_PER_GROUP, BASE: STAGE_BASE_FULL,
-    buildStageQueue: buildStageQueue, stageCoins: stageCoins, awardStage: awardStage, ensureWallet: ensureWallet, exchangeTicket: exchangeTicket, lookPull: lookPull, cardRates: cardRates, lookLeftIds: lookLeftIds, LOOK_PULL_PRICE: LOOK_PULL_PRICE, lookWear: lookWear, LOOKS: LOOKS, applyLook: applyLook, fitFrame: fitFrame, CARD_META: CARD_META, LOOK_FRAME: LOOK_FRAME, lookWallet: lookWallet, TICKET_COST: TICKET_COST,
+    buildStageQueue: buildStageQueue, stageCoins: stageCoins, awardStage: awardStage, ensureWallet: ensureWallet, exchangeTicket: exchangeTicket, lookPull: lookPull, cardRates: cardRates, lookLeftIds: lookLeftIds, LOOK_PULL_PRICE: LOOK_PULL_PRICE, lookWear: lookWear, LOOKS: LOOKS, applyLook: applyLook, startEndless: startEndless, buyUpgrade: buyUpgrade, ensureUp: ensureUp, upLv: upLv, upCost: upCost, maxHp: maxHp, cardRates: cardRates, tierBase: tierBase, endlessCoins: endlessCoins, UPGRADES: UPGRADES, fitFrame: fitFrame, CARD_META: CARD_META, LOOK_FRAME: LOOK_FRAME, lookWallet: lookWallet, TICKET_COST: TICKET_COST,
     wearCostume: wearCostume, gachaPull: gachaPull, unownedCostumes: unownedCostumes, playUnits: playUnits, unitOf: unitOf,
     playItemFromUnit: playItemFromUnit, openCalcPopup: openCalcPopup, migrateLegacy0735: migrateLegacy0735, CHEER: CHEER };
   window.ElecStudyTest.OX_TALK = OX_TALK;
