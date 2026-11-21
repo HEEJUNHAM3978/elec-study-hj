@@ -14449,7 +14449,7 @@ exports.withFuzzing = withFuzzing;
      서버 주소는 여기 한 곳만 바꾸면 된다. 서버가 없거나(404) 오류면 '랭킹 준비 중'만 보이고, 닉네임·점수는 기기에 두었다가 다시 올린다 */
   var RANK_API = { profile: "/profile", me: "/me", score: "/score", ranking: "/ranking", board: "infinite", limit: 50 };
   var SOCIAL_KEY = "elecStudy.social";
-  var NICK_RE = /^[가-힣A-Za-z0-9]{2,12}$/;
+  var NICK_RE = /^[가-힣A-Za-z0-9_]{2,12}$/;   /* 0.7.51 서버와 같게 밑줄(_) 허용 */
   function socialMeta() { var m = null; try { m = JSON.parse(localStorage.getItem(SOCIAL_KEY) || "null"); } catch (e) {} return m && typeof m === "object" ? m : {}; }
   function socialSave(m) { try { localStorage.setItem(SOCIAL_KEY, JSON.stringify(m)); } catch (e) {} }
   function nickCheck(v) {
@@ -14457,10 +14457,11 @@ exports.withFuzzing = withFuzzing;
     if (!v.length) return "닉네임을 입력해 주세요.";
     if (/\s/.test(v)) return "공백은 쓸 수 없어요.";
     if (v.length < 2 || v.length > 12) return "닉네임은 2~12자로 해 주세요.";
-    if (!NICK_RE.test(v)) return "한글·영문·숫자만 쓸 수 있어요(특수문자 안 됨).";
+    if (!NICK_RE.test(v)) return "한글·영문·숫자·밑줄(_)만 쓸 수 있어요(다른 특수문자 안 됨).";
     return "";
   }
   function myNick() { return socialMeta().nick || ""; }
+  var NICK_MSG = { taken: "이미 쓰는 닉네임이에요(대소문자만 다른 것도 같은 닉네임). 다른 닉네임으로 바꿔 주세요.", invalid: "닉네임 규칙 위반이에요. 2~12자 한글·영문·숫자·밑줄(_)만 돼요.", busy: "요청이 많아요. 잠시 뒤에 다시 해 주세요." };
   var _socialBusy = null;
   /* 서버에 닉네임·최고 점수를 올린다. 결과: { state: "ok" | "nologin" | "nonick" | "notready" | "taken", msg } */
   function socialFlush() {
@@ -14475,14 +14476,24 @@ exports.withFuzzing = withFuzzing;
         if (sn && !nickCheck(sn)) { var m2 = socialMeta(); m2.nick = sn; m2.nickDirty = false; socialSave(m2); return { state: "ok" }; }
         return { state: r.ok ? "nonick" : "notready" };
       });
+    } else if (m.nickDirty && m.nickErr === "taken") {
+      p = Promise.resolve({ state: "taken", msg: NICK_MSG.taken });
+    } else if (m.nickDirty && m.nickErr === "invalid") {
+      p = Promise.resolve({ state: "invalid", msg: NICK_MSG.invalid });
+    } else if (m.nickDirty && (m.nickRetryAt || 0) > Date.now()) {
+      p = Promise.resolve({ state: "busy", msg: NICK_MSG.busy });
     } else if (m.nickDirty) {
       p = authCall(RANK_API.profile, { nick: m.nick }, tok, "PUT").then(function (r) {
         var m2 = socialMeta();
-        if (r.ok) { m2.nickDirty = false; m2.nickErr = ""; socialSave(m2); return { state: "ok" }; }
-        if (r.status === 409) { m2.nickErr = "taken"; socialSave(m2); return { state: "taken", msg: "이미 쓰는 닉네임이에요. 다른 닉네임으로 바꿔 주세요." }; }
+        if (r.ok) { m2.nickDirty = false; m2.nickErr = ""; m2.nickRetryAt = 0; if (r.j && r.j.nick) m2.nick = r.j.nick; socialSave(m2); return { state: "ok" }; }
+        if (r.status === 409) { m2.nickErr = "taken"; socialSave(m2); return { state: "taken", msg: NICK_MSG.taken }; }
+        if (r.status === 400) { m2.nickErr = "invalid"; socialSave(m2); return { state: "invalid", msg: NICK_MSG.invalid }; }
+        if (r.status === 429) { m2.nickRetryAt = Date.now() + Math.max(30, r.retry || 60) * 1000; socialSave(m2); return { state: "busy", msg: NICK_MSG.busy }; }
+        if (r.status === 401) return { state: "auth" };
         return { state: "notready" };
       });
     }
+    if (_rank && !_rank.loading) _rank = null;   /* 닉네임·점수가 바뀔 수 있으니 랭킹은 다음에 열 때 새로 받는다 */
     _socialBusy = p.then(function (st) {
       if (st.state !== "ok") return st;
       var m3 = socialMeta();
@@ -14490,9 +14501,16 @@ exports.withFuzzing = withFuzzing;
       if (m3.nickDirty) return { state: "notready" };
       var best = infBestScore();
       if (!(best > 0) || (m3.sentScore || 0) >= best) return { state: "ok" };
+      /* 0.7.51: 아직 안 올라간 최고 점수가 있을 때만 보낸다. 429·오류 뒤에는 정해진 시간 동안 다시 보내지 않는다(분당 약 30회 제한) */
+      if ((m3.scoreRetryAt || 0) > Date.now()) return { state: m3.scoreRetryWhy === "busy" ? "busy" : "notready" };
       return authCall(RANK_API.score, { board: RANK_API.board, value: best }, tok).then(function (r) {
-        if (r.ok) { var m4 = socialMeta(); m4.sentScore = best; socialSave(m4); return { state: "ok" }; }
-        return { state: "notready" };
+        var m4 = socialMeta();
+        if (r.ok) { m4.sentScore = Math.max(best, Number(r.j && r.j.best) || 0); m4.scoreRetryAt = 0; m4.scoreRetryWhy = ""; socialSave(m4); return { state: "ok" }; }
+        if (r.status === 401) return { state: "auth" };
+        m4.scoreRetryWhy = r.status === 429 ? "busy" : "fail";
+        m4.scoreRetryAt = Date.now() + (r.status === 429 ? Math.max(60, r.retry || 60) : 120) * 1000;
+        socialSave(m4);
+        return { state: r.status === 429 ? "busy" : "notready" };
       });
     }).catch(function () { return { state: "notready" }; }).then(function (st) { _socialBusy = null; return st; });
     return _socialBusy;
@@ -14505,7 +14523,8 @@ exports.withFuzzing = withFuzzing;
     if (m.nick !== v || m.nickErr) { m.nick = v; m.nickDirty = true; m.nickErr = ""; m.sentScore = 0; socialSave(m); }
     if (!syncToken()) return Promise.resolve({ ok: true, msg: "이 기기에 저장했어요. 로그인하면 서버에도 저장돼요." });
     return socialFlush().then(function (st) {
-      if (st.state === "taken") return { ok: false, msg: st.msg };
+      if (st.state === "taken" || st.state === "invalid" || st.state === "busy") return { ok: false, msg: st.msg };
+      if (st.state === "auth") return { ok: true, msg: "이 기기에 저장했어요. 로그인이 만료돼서 다시 로그인하면 서버에 저장돼요." };
       if (st.state === "notready") return { ok: true, msg: "이 기기에 저장했어요. 랭킹 서버가 준비되면 자동으로 올라가요." };
       return { ok: true, msg: "닉네임을 저장했어요." };
     });
@@ -14513,9 +14532,9 @@ exports.withFuzzing = withFuzzing;
   var _nickMsg = "", _nickBad = false;
   function nickSection() {
     var m = socialMeta();
-    var input = el("input", { class: "sync-in nick-in", type: "text", name: "nickname", maxlength: "12", autocomplete: "off", spellcheck: "false", placeholder: "닉네임 (2~12자, 한글·영문·숫자)", value: m.nick || "" });
-    var msg = el("p", { class: "nick-msg" + (_nickBad ? " is-bad" : ""), role: "status", text: _nickMsg || (m.nickErr === "taken" ? "이미 쓰는 닉네임이에요. 다른 닉네임으로 바꿔 주세요." : m.nick ? (m.nickDirty ? "기기에 저장됨 · 서버에 아직 안 올라감" : "랭킹에 이 닉네임으로 나와요.") : "랭킹에 보일 이름이에요.") });
-    if (m.nickErr === "taken" && !_nickMsg) msg.classList.add("is-bad");
+    var input = el("input", { class: "sync-in nick-in", type: "text", name: "nickname", maxlength: "12", autocomplete: "off", spellcheck: "false", placeholder: "닉네임 (2~12자, 한글·영문·숫자·_)", value: m.nick || "" });
+    var msg = el("p", { class: "nick-msg" + (_nickBad ? " is-bad" : ""), role: "status", text: _nickMsg || (m.nickErr === "taken" ? NICK_MSG.taken : m.nickErr === "invalid" ? NICK_MSG.invalid : m.nick ? (m.nickDirty ? "기기에 저장됨 · 서버에 아직 안 올라감" : "랭킹에 이 닉네임으로 나와요.") : "랭킹에 보일 이름이에요.") });
+    if (m.nickErr && !_nickMsg) msg.classList.add("is-bad");
     var btn = el("button", { class: "btn nick-save", type: "button", text: "저장", onclick: function () {
       var v = input.value;
       btn.disabled = true;
@@ -14531,8 +14550,9 @@ exports.withFuzzing = withFuzzing;
     socialFlush().then(function () {
       return authCall(RANK_API.ranking + "?board=" + encodeURIComponent(RANK_API.board) + "&limit=" + RANK_API.limit, null, tok);
     }).then(function (r) {
-      if (r.ok && r.j && Array.isArray(r.j.list)) _rank = { state: "ok", list: r.j.list.slice(0, RANK_API.limit), me: r.j.me || null, at: Date.now() };
-      else _rank = { state: r.status === 401 ? "auth" : "notready" };
+      var arr = r.ok && r.j ? (Array.isArray(r.j.items) ? r.j.items : Array.isArray(r.j.list) ? r.j.list : null) : null;   /* 0.7.51 서버는 items, 예전 형식 list도 읽는다 */
+      if (arr) _rank = { state: "ok", list: arr.slice(0, RANK_API.limit), me: r.j.me || null, at: Date.now() };
+      else _rank = { state: r.status === 401 ? "auth" : r.status === 429 ? "busy" : "notready" };
     }).catch(function () { _rank = { state: "notready" }; }).then(function () { if (/랭킹/.test(decodeURIComponent(location.hash || ""))) render(); });
   }
   function viewRanking() {
@@ -14550,15 +14570,17 @@ exports.withFuzzing = withFuzzing;
       page.appendChild(el("button", { class: "btn review-cta", type: "button", text: "로그인", onclick: function () { _authMsg = ""; go("설정", "로그인"); } }));
     } else if (R.state === "auth") {
       page.appendChild(el("p", { class: "rank-msg", role: "status", text: "로그인이 만료됐어요. 다시 로그인해 주세요." }));
+    } else if (R.state === "busy") {
+      page.appendChild(el("p", { class: "rank-msg", role: "status", text: "요청이 많아요. 잠시 뒤에 다시 해 주세요." }));
     } else if (R.state !== "ok") {
       page.appendChild(el("p", { class: "rank-msg is-notready", role: "status", text: "랭킹 준비 중이에요. 서버가 열리면 내 최고 점수가 자동으로 올라가요." }));
     } else {
       if (!nick) page.appendChild(el("p", { class: "rank-msg", text: "닉네임을 정하면 랭킹에 올라가요. (설정 → 닉네임)" }));
-      if (R.me && R.me.rank) page.appendChild(el("p", { class: "rank-me is-server" }, [el("span", { text: "내 순위: " + R.me.rank + "위 · " + (R.me.value || 0) + "점" })]));
+      page.appendChild(el("p", { class: "rank-me is-server" }, [el("span", { text: R.me && R.me.rank ? "내 순위: " + R.me.rank + "위 · " + (R.me.value || 0) + "점" : "내 순위: 아직 기록 없음" })]));
       var ul = el("ol", { class: "rank-list" });
       if (!R.list.length) ul.appendChild(el("li", { class: "rank-row", text: "아직 기록이 없어요. 첫 기록을 남겨 보자!" }));
       R.list.forEach(function (x, i) {
-        var rk = x.rank || i + 1, me = nick && x.nick === nick;
+        var rk = x.rank || i + 1, me = nick && String(x.nick || "").toLowerCase() === nick.toLowerCase();   /* 같은 점수는 같은 순위(서버 rank 그대로) */
         ul.appendChild(el("li", { class: "rank-row" + (me ? " is-me" : "") + (rk <= 3 ? " top-" + rk : "") }, [
           el("span", { class: "rank-no num", text: rk + "위" }), el("span", { class: "rank-nick", text: String(x.nick || "?") }), el("span", { class: "rank-val num", text: (x.value || 0) + "점" })
         ]));
@@ -20014,7 +20036,7 @@ exports.withFuzzing = withFuzzing;
     play.appendChild(el("p", { class: "endless-best inf-best-line" + (r.newBest ? " is-new" : "") }, [
       el("b", { text: r.newBest ? "최고 기록 갱신!" : "최고 기록" }), el("span", { class: "num", text: " " + b.best + "점 · 최고 " + b.bestStage + "스테이지" })
     ]));
-    var up = s.upload, upText = up === "ok" ? "온라인 랭킹에 반영했어요." : up === "nologin" ? "로그인하면 온라인 랭킹에 올라가요." : up === "nonick" ? "닉네임을 정하면 랭킹에 올라가요. (설정 → 닉네임)" : up === "taken" ? "닉네임이 겹쳐요. 설정에서 바꿔 주세요." : up === "notready" ? "랭킹 준비 중 · 기록은 기기에 저장했고 나중에 자동으로 올려요." : "랭킹에 올리는 중…";
+    var up = s.upload, upText = up === "ok" ? "온라인 랭킹에 반영했어요." : up === "nologin" ? "로그인하면 온라인 랭킹에 올라가요." : up === "nonick" ? "닉네임을 정하면 랭킹에 올라가요. (설정 → 닉네임)" : up === "taken" ? "닉네임이 겹쳐요. 설정에서 바꿔 주세요." : up === "invalid" ? "닉네임 규칙 위반이에요. 설정에서 바꿔 주세요." : up === "busy" ? "요청이 많아요. 잠시 뒤에 자동으로 다시 올려요." : up === "auth" ? "로그인이 만료됐어요. 다시 로그인하면 올라가요." : up === "notready" ? "랭킹 준비 중 · 기록은 기기에 저장했고 나중에 자동으로 올려요." : "랭킹에 올리는 중…";
     play.appendChild(el("p", { class: "inf-up-msg", role: "status", text: upText }));
     play.appendChild(el("p", { class: "coin-big" }, [el("i", { class: "coin-dot", "aria-hidden": "true" }), el("b", { class: "num", text: "+" + r.coins }), el("span", { text: " 코인" })]));
     var box = el("div", { class: "coin-calc" });
@@ -20976,7 +20998,7 @@ exports.withFuzzing = withFuzzing;
     page.appendChild(syncSection());
     page.appendChild(el("h2", { text: "비공식 팬아트 고지" }));
     page.appendChild(el("p", { class: "fan-notice", text: "이 앱에 나오는 버추얼 유튜버 관련 그림·이름·대사는 팬이 만든 비공식 2차 창작이며, 각 소속사·본인과 관계가 없습니다. 각 캐릭터에 대한 모든 권리는 해당 소속사(이세계아이돌: 왁엔터테인먼트, 스텔라이브: 스텔라이브/Brave group 등)와 본인에게 있습니다. 비상업 개인 학습용이며 수익이 없습니다. 권리자가 요청하면 즉시 삭제합니다." }));
-    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.50" }));
+    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.51" }));
     return [page];
   }
 
@@ -21055,7 +21077,7 @@ exports.withFuzzing = withFuzzing;
   window.ElecStudyTest.allCramCards = allCramCards;
   window.ElecStudyTest.CRAM_BLANKS = CRAM_BLANKS;
   window.ElecStudyTest.answerReigns = answerReigns;
-  window.ElecStudyTest.inf = { INF: INF, infStage: infStage, infDmg: infDmg, infMult: infMult, infBatch: infBatch, startInf: startInf, nickCheck: nickCheck, setNick: setNick, socialMeta: socialMeta, infBest: infBest, RANK_API: RANK_API, infTimeLimit: infTimeLimit, infIsCalcItem: infIsCalcItem, INF_TIME: INF_TIME, reigns: function () { return state.reigns; }, unit: unitOf };
+  window.ElecStudyTest.inf = { INF: INF, infStage: infStage, infDmg: infDmg, infMult: infMult, infBatch: infBatch, startInf: startInf, nickCheck: nickCheck, setNick: setNick, socialMeta: socialMeta, infBest: infBest, RANK_API: RANK_API, flush: socialFlush, infTimeLimit: infTimeLimit, infIsCalcItem: infIsCalcItem, INF_TIME: INF_TIME, reigns: function () { return state.reigns; }, unit: unitOf };
   window.ElecStudyTest.reignsAdvance = reignsAdvance;
   window.ElecStudyTest.viewCramDeck = viewCramDeck;
   window.ElecStudyTest.debugReignsDrag = function (dx) {
