@@ -20624,44 +20624,25 @@ exports.withFuzzing = withFuzzing;
       });
     };
     requestAnimationFrame(fitMath); setTimeout(fitMath, 120); setTimeout(fitMath, 450);
-    /* 0.7.61 캐릭터 크기: 남는 공간에 맞춰 얼굴~상반신이 통째로 보이게(잘림 없음), 공간이 작으면 숨김 */
+    /* 0.7.62 캐릭터 크기: 화면 높이 기준 고정값 하나(모든 카드 같은 크기, 숨기지 않음). 남는 공간은 문제·그림이 쓴다 */
     var fitChar = function () {
       if (!card.isConnected || card.classList.contains("is-rev")) return;
       var por = card.querySelector(".reigns-portrait"); if (!por) return;
-      var ccs = getComputedStyle(card), padX = parseFloat(ccs.paddingLeft) + parseFloat(ccs.paddingRight), padY = parseFloat(ccs.paddingTop) + parseFloat(ccs.paddingBottom);
-      var cw = card.clientWidth - padX, chh = card.clientHeight - padY, gap = parseFloat(ccs.rowGap) || 0;
       var im = por.querySelector("img.ox-sprite"), asp = im && im.naturalWidth ? im.naturalHeight / im.naturalWidth : 1.25;
       var row = por.parentNode.classList.contains("reigns-talk-row") ? por.parentNode : por;
-      por.style.display = ""; row.style.display = "";
+      por.style.display = ""; row.style.display = ""; row.style.flex = "0 0 auto";
+      var H = charFixedH();
+      por.style.setProperty("--rw", (H / asp * 0.985) + "px"); por.style.height = H + "px";
       if (card.classList.contains("no-fig")) {
         var q = card.querySelector(".reigns-q-big"), qi = q && q.querySelector(".q-in"); if (!q || !qi) return;
-        q.style.flex = "0 0 auto"; q.style.fontSize = "";
-        var fs = parseFloat(getComputedStyle(q).fontSize), n = 0, rw = 0, ph = 0;
-        for (;;) {
-          por.style.setProperty("--rw", "1px"); por.style.height = "1px";
-          var qh = q.getBoundingClientRect().height;
-          var avail = chh - qh - gap;
-          ph = Math.max(0, Math.min(cw * asp * 1.15, avail)); rw = ph / asp * 0.985;
-          var blank = chh - qh - gap - ph;
-          if (blank <= 0.02 * chh || fs >= 56 || n++ > 24) break;
-          fs += 2; q.style.fontSize = fs + "px";
+        q.style.flex = "1 1 auto"; q.style.minHeight = "0"; q.style.fontSize = "";
+        var qcs = getComputedStyle(q), roomH = function () { return q.clientHeight - parseFloat(qcs.paddingTop) - parseFloat(qcs.paddingBottom); };
+        var fs = parseFloat(qcs.fontSize), n = 0;
+        while (qi.getBoundingClientRect().height > roomH() && fs > 13 && n++ < 30) { fs -= 1; q.style.fontSize = fs + "px"; }
+        if (n === 0) {
+          while (fs < 44 && n++ < 30) { q.style.fontSize = (fs + 1) + "px"; if (qi.getBoundingClientRect().height > roomH() * 0.9 || q.scrollWidth > q.clientWidth + 1) { q.style.fontSize = fs + "px"; break; } fs += 1; }
         }
-        por.style.setProperty("--rw", rw + "px"); por.style.height = ph + "px";
-        q.style.flex = "1 1 auto";
-        if (ph < 90) row.style.display = "none";
-        return;
       }
-      var fr = card.querySelector(".fig-frame"); if (!fr) return;
-      var fi = fr.querySelector("img"), sv = fr.querySelector("svg"), fa = 0;
-      if (fi && fi.naturalWidth) fa = fi.naturalHeight / fi.naturalWidth;
-      else if (sv && sv.viewBox && sv.viewBox.baseVal && sv.viewBox.baseVal.width) fa = sv.viewBox.baseVal.height / sv.viewBox.baseVal.width;
-      por.style.height = "";
-      var have = fr.getBoundingClientRect().height + por.getBoundingClientRect().height;
-      var need = fa ? 0.93 * fr.getBoundingClientRect().width * fa : 0.55 * have;
-      var spare = have - need - 4;
-      var h = Math.min(spare, cw * asp * 0.8), r2 = h / asp * 0.985;
-      if (h * 0.985 < 90) { row.style.display = "none"; return; }
-      por.style.setProperty("--rw", r2 + "px"); por.style.height = h + "px";
     };
     requestAnimationFrame(fitChar); setTimeout(fitChar, 130); setTimeout(fitChar, 500);
     card.querySelectorAll("img").forEach(function (m) { if (!m.complete) m.addEventListener("load", fitChar); });
@@ -20944,6 +20925,11 @@ exports.withFuzzing = withFuzzing;
     }
     return cf;
   }
+  /* 0.7.62 캐릭터 고정 높이: 화면 높이의 20%(가로가 좁으면 가로 46%까지) */
+  function charFixedH() {
+    var vh = window.innerHeight || document.documentElement.clientHeight || 800, vw = window.innerWidth || document.documentElement.clientWidth || 400;
+    return Math.round(Math.max(100, Math.min(vh * 0.2, vw * 0.46, 200)));
+  }
   function fitFrame(stage) {
     if (!stage || !stage.isConnected) return;
     fitFrameInner(stage);
@@ -21205,7 +21191,7 @@ exports.withFuzzing = withFuzzing;
     page.appendChild(syncSection());
     page.appendChild(el("h2", { text: "비공식 팬아트 고지" }));
     page.appendChild(el("p", { class: "fan-notice", text: "이 앱에 나오는 버추얼 유튜버 관련 그림·이름·대사는 팬이 만든 비공식 2차 창작이며, 각 소속사·본인과 관계가 없습니다. 각 캐릭터에 대한 모든 권리는 해당 소속사(이세계아이돌: 왁엔터테인먼트, 스텔라이브: 스텔라이브/Brave group 등)와 본인에게 있습니다. 비상업 개인 학습용이며 수익이 없습니다. 권리자가 요청하면 즉시 삭제합니다." }));
-    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.61" }));
+    page.appendChild(el("p", { class: "hub-note", text: "앱 버전 0.7.62" }));
     return [page];
   }
 
