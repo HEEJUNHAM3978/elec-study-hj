@@ -2985,6 +2985,90 @@ html[data-bg]:not([data-bg="b01"]) .app-shell.is-game .ox-scene-art::after { bac
 
 .review-exit{white-space:nowrap;flex-shrink:0}
 
+/* ===== 0.7.77 성취감: 콤보 · XP 바 · 별 · 업적 · 미션 ===== */
+.reigns-play .cram-top { position: relative; }
+.g77-xp { position: absolute; left: 0.6rem; right: 0.6rem; bottom: -6px; height: 11px; display: flex; align-items: center; gap: 5px; pointer-events: none; z-index: 3; }
+.g77-xp > b { flex: 0 0 auto; font-size: 9.5px; line-height: 11px; color: #fde68a; background: rgba(15, 23, 42, 0.88); border: 1px solid rgba(253, 230, 138, 0.45); border-radius: 6px; padding: 0 4px; font-weight: 800; }
+.g77-xp > i, .g77-res-lv > i, .g77-hub-bar > i { display: block; flex: 1 1 auto; height: 4px; border-radius: 3px; background: rgba(255, 255, 255, 0.2); overflow: hidden; }
+.g77-xp > i > span, .g77-res-lv > i > span, .g77-hub-bar > i > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #facc15, #fb923c); transition: width 0.5s ease; }
+.rv-verdict { display: inline-flex; align-items: baseline; gap: 0.25em; }
+.rv-combo { font-size: 0.34em; font-weight: 900; color: #fff; background: linear-gradient(135deg, #f97316, #e11d48); border-radius: 999px; padding: 0.12em 0.55em; letter-spacing: 0; text-shadow: none; transform: translateY(-0.4em) rotate(-4deg); animation: g77-pop 0.45s cubic-bezier(.2,1.6,.4,1) both; }
+.rv-combo.is-mile { background: linear-gradient(135deg, #facc15, #f97316 55%, #e11d48); box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.35); }
+.g77-gain { margin: -0.1rem 0 0; display: flex; justify-content: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 800; color: #b45309; }
+.g77-gain > span { background: #fef3c7; border-radius: 999px; padding: 0.05rem 0.5rem; animation: g77-rise 0.6s ease both; }
+.g77-gain > span.is-fix { background: #dcfce7; color: #15803d; }
+.reigns-card.is-combo-hi { animation: g77-glow 1.2s ease-out 1; }
+.g77-burst { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); z-index: 6; pointer-events: none; display: flex; flex-direction: column; align-items: center; animation: g77-burst 1.5s ease-out both; }
+.g77-burst > b { font-size: 2.6rem; font-weight: 900; color: #fff; -webkit-text-stroke: 2px #ea580c; text-shadow: 0 4px 0 #9a3412, 0 0 24px rgba(250, 204, 21, 0.9); white-space: nowrap; }
+.g77-burst > span { margin-top: 0.2rem; font-weight: 900; color: #78350f; background: #fde68a; border-radius: 999px; padding: 0.1rem 0.7rem; }
+@keyframes g77-pop { 0% { transform: translateY(-0.4em) scale(0.2) rotate(-4deg); opacity: 0; } 100% { transform: translateY(-0.4em) scale(1) rotate(-4deg); opacity: 1; } }
+@keyframes g77-rise { 0% { transform: translateY(6px); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes g77-glow { 0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.9); } 60% { box-shadow: 0 0 0 14px rgba(250, 204, 21, 0); } 100% { box-shadow: none; } }
+@keyframes g77-burst { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } 18% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } 30% { transform: translate(-50%, -50%) scale(1); } 75% { opacity: 1; } 100% { transform: translate(-50%, -80%) scale(1); opacity: 0; } }
+/* 판 결과 */
+.g77-res { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; width: 100%; max-width: 26rem; margin: 0.1rem auto 0.2rem; padding: 0.55rem 0.7rem; border-radius: 14px; background: rgba(15, 23, 42, 0.72); border: 1px solid rgba(253, 230, 138, 0.3); color: #f8fafc; box-sizing: border-box; }
+.g77-stars { display: flex; gap: 0.3rem; line-height: 1; }
+.g77-star { font-size: 2.3rem; color: rgba(255, 255, 255, 0.22); }
+.g77-star.is-on { color: #facc15; text-shadow: 0 0 12px rgba(250, 204, 21, 0.7), 0 2px 0 #a16207; animation: g77-star 0.5s cubic-bezier(.2,1.6,.4,1) both; animation-delay: var(--d, 0s); }
+@keyframes g77-star { 0% { transform: scale(0) rotate(-40deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+.g77-rec { margin: 0; font-weight: 900; font-size: 1rem; color: #fff; background: linear-gradient(135deg, #e11d48, #f97316); border-radius: 999px; padding: 0.1rem 0.8rem; animation: g77-pulse 1s ease-in-out infinite alternate; }
+@keyframes g77-pulse { from { transform: scale(1); } to { transform: scale(1.07); } }
+.g77-pct { margin: 0; font-size: 0.9rem; color: #e2e8f0; }
+.g77-res-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem; width: 100%; }
+.g77-res-grid > p { margin: 0; display: flex; flex-direction: column; align-items: center; background: rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 0.25rem 0.2rem; }
+.g77-res-grid span { font-size: 0.72rem; color: #cbd5e1; }
+.g77-res-grid b { font-size: 1.02rem; color: #fde68a; white-space: nowrap; }
+.g77-res-note { margin: 0; font-size: 0.72rem; color: #cbd5e1; }
+.g77-res-lv { display: flex; align-items: center; gap: 0.45rem; width: 100%; font-size: 0.78rem; }
+.g77-res-lv > b { color: #fde68a; }
+.g77-res-lv > i { height: 6px; }
+.g77-res-streak { margin: 0; font-size: 0.8rem; color: #fed7aa; }
+/* 팝업 */
+.g77-pop { position: fixed; z-index: 9000; left: 50%; transform: translateX(-50%); }
+.g77-toast { top: calc(env(safe-area-inset-top, 0px) + 0.6rem); width: min(22rem, calc(100vw - 1.2rem)); display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.8rem; border-radius: 14px; background: #0f172a; color: #f8fafc; border: 2px solid #facc15; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45); box-sizing: border-box; animation: g77-drop 0.45s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes g77-drop { 0% { transform: translate(-50%, -140%); } 100% { transform: translate(-50%, 0); } }
+.g77-badge { flex: 0 0 auto; width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center; font-size: 1.2rem; background: radial-gradient(circle at 35% 30%, #fde68a, #f59e0b); color: #78350f; }
+.g77-t { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; }
+.g77-t > b { font-size: 0.95rem; }
+.g77-t > span { font-size: 0.8rem; opacity: 0.85; }
+.g77-toast .g77-coin { flex: 0 0 auto; font-weight: 900; color: #fde68a; }
+.g77-lv { top: 50%; transform: translate(-50%, -50%); width: min(20rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); }
+.g77-lv-card { display: flex; flex-direction: column; align-items: center; padding: 0.8rem 0.9rem 0.9rem; border-radius: 20px; background: linear-gradient(180deg, #1e1b4b, #0f172a); border: 3px solid #facc15; box-shadow: 0 0 0 6px rgba(250, 204, 21, 0.18), 0 20px 50px rgba(0, 0, 0, 0.55); color: #fff; animation: g77-lvin 0.55s cubic-bezier(.2,1.5,.4,1) both; }
+@keyframes g77-lvin { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.g77-lv-k { margin: 0; font-size: 1.6rem; font-weight: 900; letter-spacing: 0.04em; color: #fde68a; text-shadow: 0 0 16px rgba(250, 204, 21, 0.8); }
+.g77-lv-n { margin: 0; font-size: 1.1rem; font-weight: 800; }
+.g77-lv-hero { height: min(34dvh, 15rem); display: flex; justify-content: center; margin: 0.3rem 0; }
+.g77-lv-hero img { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: center bottom; }
+.g77-lv-say { margin: 0; text-align: center; font-size: 0.95rem; background: #fff; color: #0f172a; border-radius: 12px; padding: 0.35rem 0.6rem; }
+.g77-lv-say .who-name { color: var(--wcl, #4820c5); margin-right: 0.35em; }
+.g77-coin { margin: 0.45rem 0 0; font-size: 1.1rem; color: #fde68a; }
+/* 게임 시작 화면 */
+.g77-hub { display: flex; flex-direction: column; gap: 0.4rem; padding: 0.7rem 0.8rem; border-radius: 14px; background: rgba(15, 23, 42, 0.06); border: 1px solid rgba(15, 23, 42, 0.12); }
+.g77-hub-top { display: flex; align-items: center; gap: 0.55rem; }
+.g77-hub-lv { font-size: 1.15rem; font-weight: 900; color: #b45309; }
+.g77-hub-bar { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; font-size: 0.7rem; color: #64748b; }
+.g77-hub-bar > i { flex: 0 0 auto; height: 7px; background: rgba(15, 23, 42, 0.12); }
+.g77-hub-streak { font-weight: 900; color: #c2410c; white-space: nowrap; }
+.g77-hub-h { margin: 0.2rem 0 0; font-weight: 800; font-size: 0.9rem; }
+.g77-missions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.g77-missions li { display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.85rem; padding: 0.3rem 0.5rem; border-radius: 8px; background: rgba(255, 255, 255, 0.7); }
+.g77-missions li.is-done { background: #dcfce7; color: #166534; }
+.g77-m-v { white-space: nowrap; color: #64748b; font-size: 0.78rem; }
+.g77-missions li.is-done .g77-m-v { color: #166534; }
+.g77-ach-btn { align-self: stretch; }
+.g77-sheet { position: fixed; inset: 0; z-index: 8500; background: rgba(2, 6, 23, 0.55); display: flex; align-items: flex-end; justify-content: center; }
+.g77-sheet-panel { width: min(30rem, 100%); max-height: 80dvh; display: flex; flex-direction: column; background: #f8fafc; color: #0f172a; border-radius: 18px 18px 0 0; padding: 0.8rem 0.8rem calc(0.8rem + env(safe-area-inset-bottom, 0px)); box-sizing: border-box; }
+.g77-sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.g77-ach-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 0.35rem; }
+.g77-ach-list li { display: flex; align-items: center; gap: 0.55rem; padding: 0.4rem 0.5rem; border-radius: 10px; background: #e2e8f0; opacity: 0.75; }
+.g77-ach-list li.is-got { background: #fef3c7; opacity: 1; }
+.g77-ach-list li:not(.is-got) .g77-badge { background: #cbd5e1; color: #64748b; }
+.g77-ach-list .g77-coin { margin: 0; font-size: 0.8rem; font-weight: 800; color: #92400e; white-space: nowrap; }
+.g77-set { display: flex; flex-direction: column; gap: 0.4rem; }
+.g77-set-row { display: flex; align-items: center; gap: 0.55rem; font-size: 1rem; min-height: 2.6rem; }
+.g77-set-row input { width: 1.4rem; height: 1.4rem; }
+.g77-up-btn { display: flex; flex-direction: column; }
+@media (prefers-reduced-motion: reduce) { .g77-burst, .rv-combo, .g77-star.is-on, .g77-rec, .g77-toast, .g77-lv-card, .reigns-card.is-combo-hi { animation: none !important; } }
 /* ===== 0.7.74 카드 답 화면: 큰 정답!/틀림! · 전신 캐릭터 · 풀이 보기 버튼 ===== */
 .reigns-card.is-verdict { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; gap: 0.2rem; padding: 0.5rem 0.4rem 0.6rem; }
 .reigns-card.is-verdict .rv-head { flex: 0 0 auto; text-align: center; }
@@ -15147,7 +15231,7 @@ exports.withFuzzing = withFuzzing;
     { id: "설정", label: "설정" }
   ];
   /* 0.7.68: 앱 버전은 이 상수 하나만 고친다(제목 옆·설정 화면이 여기서 가져간다) */
-  var APP_VERSION = "0.7.76";
+  var APP_VERSION = "0.7.77";
   window.ElecAppVersion = APP_VERSION;
   var TAB_OF = { "필기": "설정", "실기": "설정", "공식": "설정" };
 
@@ -19627,6 +19711,7 @@ exports.withFuzzing = withFuzzing;
     if (!s || s.awarded) return;
     if (s.mode === "endless") { awardEndless(s); return; }
     if (s.mode === "infinite") { awardInf(s); return; }
+    g77RunEnd(s, win);
     var w = ensureWallet();
     var r = stageCoins(s, win);
     w.coins += r.coins;
@@ -20009,6 +20094,7 @@ exports.withFuzzing = withFuzzing;
     var page = el("div", { class: "game-start" });
     page.appendChild(backBtn("메인", function () { go("홈"); }));
     page.appendChild(el("h1", { text: "게임 시작" }));
+    page.appendChild(g77HubEl());
     var box = el("div", { class: "start-choices" });
     box.appendChild(el("button", { class: "btn start-choice is-stage", type: "button", onclick: function () { go("복습", "스테이지"); } }, [
       el("b", { text: "스테이지" }), el("span", { text: "난이도와 과목을 고르고 과목마다 10장. 클리어 5판마다 뽑기권." })
@@ -20024,6 +20110,8 @@ exports.withFuzzing = withFuzzing;
       el("b", { text: "무한 연습" }), el("span", { text: "고른 과목 · 게이지 6개가 0이 될 때까지. 최고 " + w.endless.best + "라운드 · " + w.endless.bestScore + "점" })
     ]));
     page.appendChild(box);
+    page.appendChild(el("button", { class: "btn btn-secondary review-cta g77-up-btn", type: "button", onclick: function () { _shopMsg = ""; go("코스튬", "강화"); } }, [
+      el("span", { text: "강화 · 코인 " + w.coins }), el("span", { class: "review-cta-sub", text: "과목별 최대 체력 · 회복 · 카드 확률 · 방패 · 코인" })]));
     var s = state.reigns;
     if (s && s.queue && !s.over && !s.cleared && s.index < stageTotal(s)) {
       page.appendChild(el("button", { class: "btn btn-secondary review-cta stage-resume", type: "button", onclick: function () { go("복습", "개념카드세션"); } }, [
@@ -20178,6 +20266,7 @@ exports.withFuzzing = withFuzzing;
   }
   function awardEndless(s) {
     if (!s || s.awarded) return;
+    g77RunEnd(s, false);
     var w = ensureWallet(); ensureUp(w);
     var r = endlessCoins(s);
     w.coins += r.coins;
@@ -20234,6 +20323,7 @@ exports.withFuzzing = withFuzzing;
     var play = el("div", { class: "stage-result is-over is-endless reigns-play" });
     play.appendChild(el("h1", { text: "무한 모드 결과" }));
     play.appendChild(el("div", { class: "result-meta" }, [diffPill(s), el("span", { class: "num", text: "도달 " + reach + "라운드 · 점수 " + (s.score || 0) })]));
+    play.appendChild(g77ResultEl(s, r.coins));
     play.appendChild(el("div", { class: "result-hero" }, [resultHero(s.who || "hangyeol", "sad", "is-sad")]));
     play.appendChild(el("p", { class: "result-say reigns-say" }, [s.talk ? el("span", {}, [whoTag(s.who || mainChar()), el("span", { html: s.talk })]) : el("span", { html: "게이지가 바닥났다." })]));
     play.appendChild(el("p", { class: "endless-best" + (r.newBest ? " is-new" : "") }, [
@@ -20345,6 +20435,7 @@ exports.withFuzzing = withFuzzing;
     go("복습", "개념카드세션");
   }
   function answerInf(s, item, ok) {
+    g77Answer(s, item, ok);
     if (window._infTimer) { clearInterval(window._infTimer); window._infTimer = null; }
     if (!s.lastTimeout) s.lastTimeout = false;
     s.deadline = null;
@@ -20376,6 +20467,7 @@ exports.withFuzzing = withFuzzing;
   }
   function awardInf(s) {
     if (!s || s.awarded) return;
+    g77RunEnd(s, false);
     var w = ensureWallet(), b = infBest();
     var r = infCoins(s);
     w.coins += r.coins;
@@ -20440,6 +20532,7 @@ exports.withFuzzing = withFuzzing;
     var play = el("div", { class: "stage-result is-over is-endless is-inf reigns-play" });
     play.appendChild(el("h1", { text: "무한 모드 결과" }));
     play.appendChild(el("div", { class: "result-meta" }, [diffPill(s), el("span", { class: "num inf-result-meta", text: "도달 " + reach + "스테이지 · " + (s.index + 1) + "문제 · 점수 " + (s.score || 0) })]));
+    play.appendChild(g77ResultEl(s, r.coins));
     play.appendChild(el("div", { class: "result-hero" }, [resultHero(s.who || "hangyeol", "sad", "is-sad")]));
     play.appendChild(el("p", { class: "result-say reigns-say" }, [s.talk ? el("span", {}, [whoTag(s.who || mainChar()), el("span", { html: s.talk })]) : el("span", { html: "체력이 바닥났다." })]));
     play.appendChild(el("p", { class: "endless-best inf-best-line" + (r.newBest ? " is-new" : "") }, [
@@ -20604,6 +20697,7 @@ exports.withFuzzing = withFuzzing;
   function reignsAdvance() {
     var s = state.reigns;
     if (!s) return;
+    var gp = document.getElementById("g77-pop"); if (gp) gp.click();
     if (s.cleared) { go("복습", "개념카드클리어"); return; }
     if (s.over) { go("복습", "개념카드오버"); return; }
     var D = STAGE_DIFFS[s.diff] || STAGE_DIFFS.normal;
@@ -20642,6 +20736,7 @@ exports.withFuzzing = withFuzzing;
     s.revealed = true;
     s.lastOk = ok;
     s.lastPick = picked === true || picked === false ? picked : null; s.lastPickIdx = s.index;
+    if (s.mode !== "infinite") g77Answer(s, item, ok);
     if (s.mode === "infinite") { s.stageUp = false; s.lastTimeout = false; answerInf(s, item, ok); return; }
     var g = groupOfSubject(item.subject);
     var cur = s.gauges[g.id] == null ? D.start : s.gauges[g.id];
@@ -20794,6 +20889,379 @@ exports.withFuzzing = withFuzzing;
       if (p.scrollWidth > p.clientWidth + 1) p.style.whiteSpace = "normal";
     });
   }
+  /* ===== 0.7.77 성취감: 콤보 · 레벨/XP · 판 결과 별 · 업적 배지 · 연속 학습 · 일일 미션 · 효과음/진동 =====
+     저장: wallet.prog (v1), wallet.fxSet. 예전 저장에는 없으므로 처음 열 때 누적 클리어로 레벨을 채우고, 이미 달성한 업적은 조용히 표시만 한다 */
+  var G77_LV_LINES = {
+    hangyeol: ["레벨 업! Lv.{lv}이에요. 꾸준함이 이기는 거예요.", "Lv.{lv} 달성. 솔직히 좀 멋있어요."],
+    tamtam: ["레벨 업! Lv.{lv}! 마! 자신 있나!", "Lv.{lv}이라며용~ 도토리 최고!"],
+    gosegu: ["킹아~! Lv.{lv} 레벨 업!", "Lv.{lv}? 세균단 수상할 정도로 잘하네~"],
+    yuni: ["특대유니! Lv.{lv} 레벨 업!", "아르냥 Lv.{lv}! 유니 신나!"],
+    lize: ["Lv.{lv}이라니, 제법이로고!", "피엔나 레벨 업이에요, 그죠~? Lv.{lv}!"],
+    lilpa: ["레벨 업! Lv.{lv}, 하이라이트 파트다!", "박쥐단 Lv.{lv} 레전드!"],
+    jingburger: ["우리 똥강아지 Lv.{lv}! 미쳤다!", "레벨 업! Lv.{lv}, 쭉쭉 가!"],
+    hina: ["레벨 업이에요! Lv.{lv}, 도파민 나와요~", "해둥이 Lv.{lv}! 50배 대박!"],
+    jururu: ["빙그르르~ Lv.{lv} 레벨 업!", "Lv.{lv}이야~ 르르땅이 칭찬해~"],
+    tabi: ["뿡빵띠 뿡빵띠! Lv.{lv}!", "뿡댕이 Lv.{lv} 레벨 업!"],
+    honeychurros: ["영차영차♡ Lv.{lv} 레벨 업!", "허니비 Lv.{lv}! 응냨?!"],
+    rin: ["엣헴! 주인님 Lv.{lv} 레벨 업이에요!", "뇨뇨! Lv.{lv} 축하해요, 주인님~"],
+    ine: ["Lv.{lv}이라네~ 둘기님 멋있어요.", "겔겔겔, 레벨 업! Lv.{lv}."],
+    shibuki: ["대박박박! Lv.{lv} 레벨 업!", "이나리 Lv.{lv}! 신들렸다!"],
+    viichan: ["레벨 업! Lv.{lv}! 미쳤다!", "Lv.{lv}이에요! 막내가 박수 쳐 줄게요!"],
+    riko: ["레벨 업! 치코 Lv.{lv}!", "하이용사! Lv.{lv}, 마왕성이 가까워진다!"],
+    nana: ["빰빠까빰! Lv.{lv} 레쮸고!", "페토 Lv.{lv} 레벨 업했보쏘?!"],
+    iomong: ["쿵짝쿵짝! Lv.{lv} 레벨 업!", "케케케, 바둑눈 Lv.{lv}이여~"],
+    mashiro: ["빠밤빠밤! Lv.{lv} 레벨 업!", "마로 Lv.{lv}! 밍대장이 인정한다!"],
+    huya: ["후하요! Lv.{lv} 레벨 업이에요.", "바쿠 Lv.{lv}, 2000살도 놀랐어요."],
+    gyeonjahee: ["장미가 활짝! Lv.{lv} 레벨 업이에요~", "장미단 Lv.{lv}, 정말 대단해요."],
+    sagwamong: ["아삭아삭! Lv.{lv} 레벨 업!", "몽충이 Lv.{lv}! 지구종말도 막겠다~"],
+    rang: ["어흐흥! Lv.{lv} 레벨 업!", "호치 Lv.{lv}! 랑드럭 랑드럭!"],
+    toa: ["으에에?! Lv.{lv} 레벨 업!", "열러분~ Lv.{lv}이에요!"],
+    bukuki: ["부쿠부쿠! Lv.{lv} 레벨 업!", "눈덩이 Lv.{lv}, 북부도 인정한다."],
+    mare: ["왕왕 대박! Lv.{lv} 레벨 업!", "용용이 Lv.{lv}, 파도 타듯 쭉!"],
+    arisa: ["무용이 Lv.{lv} 각성!", "어머, 레벨 업이에요! Lv.{lv}!"],
+    mary: ["냐냐?! Lv.{lv} 레벨 업이다.", "단추 Lv.{lv}, 행운 가득이냐~"],
+    jegal: ["ㅏㅏㅏ잇! Lv.{lv} 레벨 업!", "금수 Lv.{lv}, 이몸이 인정한다!"],
+    hiyori: ["하핫! Lv.{lv} 레벨 업이에요!", "뿌! 도리 Lv.{lv}, 반짝반짝해요~"],
+    minyeong: ["이해했어 이해했어! Lv.{lv}!", "애솔이 Lv.{lv} 레벨 업했깨!"],
+    rena: ["뜨악! Lv.{lv} 레벨 업이다곰!", "애도라 Lv.{lv}, 왕왕띠 왕왕띠!"],
+    yangaji: ["헐랭구리방구! Lv.{lv}!", "양모노 Lv.{lv} 레벨 업, 공부꿀잼~"],
+    baekgompa: ["잉잉잉! Lv.{lv} 레벨 업!", "물범 Lv.{lv}, 응응 잘했다~"],
+    cider: ["으갸갹! Lv.{lv}, 홈런이다!", "이다들 Lv.{lv} 레벨 업, 인정하시죠?"],
+    didiyong: ["미 쵸 따! Lv.{lv}!", "쑥떡이 Lv.{lv}, 좋은데용~?"],
+    yeorumi: ["레벨 업! Lv.{lv}, 슝슝!", "우리 고래들 Lv.{lv}! 반짝반짝해요!"],
+    lucky: ["냐냐냐냐~! Lv.{lv} 레벨 업!", "러버쿤 Lv.{lv}, 오늘 럭키데이야!"],
+    chohong: ["츄츄초! Lv.{lv} 레벨 업!", "Lv.{lv}이다! 머리가 민트처럼 상쾌해~"],
+    hasiyo: ["바바바우! Lv.{lv} 레벨 업이시요!", "바바 Lv.{lv}, 천재시요?"],
+    maoruya: ["지옥참마단 Lv.{lv}! 진격이다!", "뭣이?! 벌써 Lv.{lv}이라고?!"],
+    chloe: ["Lv.{lv}! 오늘 메인 이벤트급이야.", "클돌이 레벨 업~ Lv.{lv}, 타이틀 매치 가자."],
+    blair: ["럭셔리~! Lv.{lv} 레벨 업이에요!", "고키겡요~ 집사님 Lv.{lv}이에요."],
+    mangoorang: ["오오오… Lv.{lv} 레벨 업이야아~", "이파리 Lv.{lv}… 도파민 터진다아~"],
+    chaenna: ["어때써?! 조아써!! Lv.{lv}!", "미챈넘 Lv.{lv}, 미쳤다 미쳤어~"],
+    maigomi: ["Level up! Lv.{lv}, so proud of you~", "곰하~ Lv.{lv}! Keep going!"],
+    suning: ["와아… Lv.{lv} 레벨 업이에요~", "순한 척 Lv.{lv}까지 오셨네요?"],
+    bingming: ["빙밍업! Lv.{lv}!", "봉밥이 Lv.{lv}, 치킨각이다!"],
+    mingyeolhee: ["Lv.{lv} 레벨 업! 대회 우승각!", "야금단 Lv.{lv}, 결희가 중계할게요!"],
+    sirian: ["레벨 업 확인. Lv.{lv}입니다.", "Lv.{lv} 도달. 상당히 우수합니다."]
+  };
+  var G77_ACH = [
+    { id: "run1", label: "첫 판 완료", desc: "아무 모드나 한 판 끝내기", coin: 50, ok: function (p) { return p.st.runs >= 1; } },
+    { id: "clear1", label: "첫 클리어", desc: "스테이지 한 번 클리어", coin: 100, ok: function (p) { return p.st.clears >= 1; } },
+    { id: "combo5", label: "5콤보", desc: "한 판에서 5장 연속 정답", coin: 30, ok: function (p) { return p.best.combo >= 5; } },
+    { id: "combo10", label: "10콤보", desc: "한 판에서 10장 연속 정답", coin: 100, ok: function (p) { return p.best.combo >= 10; } },
+    { id: "ok100", label: "정답 100장", desc: "누적 정답 100장", coin: 50, ok: function (p) { return p.st.ok >= 100; } },
+    { id: "gc100", label: "기출 100장", desc: "기출 카드 100장 정답", coin: 150, ok: function (p) { return p.st.gc >= 100; } },
+    { id: "calc30", label: "계산왕", desc: "계산 기출 카드 30장 정답", coin: 100, ok: function (p) { return p.st.calc >= 30; } },
+    { id: "fix10", label: "다시 맞히기 10장", desc: "틀렸던 카드 10장 다시 맞히기", coin: 50, ok: function (p) { return p.st.fix >= 10; } },
+    { id: "fix50", label: "다시 맞히기 50장", desc: "틀렸던 카드 50장 다시 맞히기", coin: 200, ok: function (p) { return p.st.fix >= 50; } },
+    { id: "star3", label: "별 3개", desc: "한 판 정답률 90% 이상", coin: 50, ok: function (p) { return p.st.star3 >= 1; } },
+    { id: "perfect", label: "완벽한 판", desc: "10장 이상 푼 판에서 하나도 안 틀리기", coin: 150, ok: function (p) { return p.st.perfect >= 1; } },
+    { id: "hard1", label: "어려움 클리어", desc: "어려움 스테이지 클리어", coin: 200, ok: function (p) { return p.st.hard >= 1; } },
+    { id: "streak3", label: "3일 연속", desc: "3일 연속 한 판 이상", coin: 50, ok: function (p) { return p.streak.best >= 3; } },
+    { id: "streak7", label: "7일 연속", desc: "7일 연속 한 판 이상", coin: 200, ok: function (p) { return p.streak.best >= 7; } },
+    { id: "lv10", label: "레벨 10", desc: "플레이어 레벨 10 달성", coin: 150, ok: function (p) { return p.lv >= 10; } },
+    { id: "daily", label: "미션 올클리어", desc: "하루 일일 미션 3개 모두 달성", coin: 50, ok: function (p) { return p.st.dailyAll >= 1; } }
+  ];
+  var G77_MASTER = 100;
+  REIGNS_GROUPS.forEach(function (g) {
+    G77_ACH.push({ id: "m-" + g.id, label: g.label + " 마스터", desc: g.full + " 카드 " + G77_MASTER + "장 정답", coin: 100, gid: g.id, ok: function (p) { return (p.st.g[g.id] || 0) >= G77_MASTER; } });
+  });
+  var G77_DAILY = {
+    ok20: { label: "오늘 20장 맞히기", goal: 20, key: "ok", coin: 30 },
+    run2: { label: "오늘 2판 끝내기", goal: 2, key: "runs", coin: 30 },
+    combo5: { label: "5콤보 한 번", goal: 5, key: "combo", coin: 30 },
+    star2: { label: "별 2개 이상 판 1번", goal: 1, key: "star2", coin: 30 },
+    fix3: { label: "틀렸던 카드 3장 다시 맞히기", goal: 3, key: "fix", coin: 40 },
+    gc10: { label: "기출 카드 10장 맞히기", goal: 10, key: "gc", coin: 40 },
+    calc5: { label: "계산 카드 5장 맞히기", goal: 5, key: "calc", coin: 40 }
+  };
+  var G77_DKEYS = ["ok", "runs", "combo", "star2", "fix", "gc", "calc"];
+  function g77Day(off) { var d = new Date(); d.setDate(d.getDate() + (off || 0)); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+  function g77DayNo(ds) { var a = String(ds).split("-"); return Math.round(Date.UTC(+a[0], +a[1] - 1, +a[2]) / 864e5); }
+  function g77Missions(ds) {
+    var n = g77DayNo(ds || g77Day());
+    return [["ok20", "run2"][n % 2], ["combo5", "star2", "fix3"][n % 3], ["gc10", "calc5"][Math.floor(n / 2) % 2]];
+  }
+  function g77Need(lv) { return 80 + 40 * (lv - 1); }
+  function g77Set() {
+    var w = ensureWallet(), f = w.fxSet;
+    if (!f || typeof f !== "object") f = w.fxSet = { snd: true, vib: true };
+    if (typeof f.snd !== "boolean") f.snd = true;
+    if (typeof f.vib !== "boolean") f.vib = true;
+    return f;
+  }
+  function g77N(o, k) { var v = Math.floor(Number(o[k])); o[k] = v >= 0 ? v : 0; }
+  var _g77Seeding = false;
+  function g77P() {
+    var w = ensureWallet(), p = w.prog, fresh = false;
+    if (!p || typeof p !== "object") { p = w.prog = { v: 1 }; fresh = true; }
+    g77N(p, "xp"); if (!(p.lv >= 1)) p.lv = 1; p.lv = Math.min(99, Math.floor(p.lv));
+    if (!p.st || typeof p.st !== "object") p.st = {};
+    ["runs", "clears", "ok", "gc", "calc", "fix", "star3", "perfect", "hard", "dailyAll", "cards"].forEach(function (k) { g77N(p.st, k); });
+    if (!p.st.g || typeof p.st.g !== "object") p.st.g = {};
+    REIGNS_GROUPS.forEach(function (g) { g77N(p.st.g, g.id); });
+    if (!p.best || typeof p.best !== "object") p.best = {};
+    g77N(p.best, "combo");
+    if (!p.best.score || typeof p.best.score !== "object") p.best.score = {};
+    if (!p.ach || typeof p.ach !== "object") p.ach = {};
+    if (!p.streak || typeof p.streak !== "object") p.streak = { n: 0, best: 0, last: "" };
+    g77N(p.streak, "n"); g77N(p.streak, "best"); if (typeof p.streak.last !== "string") p.streak.last = "";
+    if (!p.daily || typeof p.daily !== "object") p.daily = {};
+    var today = g77Day();
+    if (p.daily.d !== today) p.daily = { d: today, done: {}, all: 0 };
+    G77_DKEYS.forEach(function (k) { g77N(p.daily, k); });
+    if (!p.daily.done || typeof p.daily.done !== "object") p.daily.done = {};
+    if (fresh) {
+      /* 예전 저장: 누적 클리어 수만큼 판 기록과 경험치를 채운다(팝업·보상 없이) */
+      p.st.clears = w.clears || 0; p.st.runs = w.clears || 0;
+      var xp = (w.clears || 0) * 60 + ((w.endless && w.endless.runs) || 0) * 20 + ((w.inf && w.inf.runs) || 0) * 20;
+      while (xp >= g77Need(p.lv) && p.lv < 99) { xp -= g77Need(p.lv); p.lv += 1; }
+      p.xp = xp;
+      _g77Seeding = true; g77CheckAch(p); _g77Seeding = false;
+    }
+    return p;
+  }
+  function g77StreakNow(p) { p = p || g77P(); return (p.streak.last === g77Day() || p.streak.last === g77Day(-1)) ? p.streak.n : 0; }
+  function g77Kind(item) {
+    var u = item && item.unit ? unitOf(item.unit) : null;
+    var uid = u ? String(u.u || "") : String((item && item.id) || "");
+    var gc = !!(u && (u.k === "exam" || u.gq || u.src || /^gc\d/.test(uid))) || /^gc\d/.test(uid);
+    return { gc: gc, calc: !!(u && u.calc) };
+  }
+  function g77WasWrong(item) {
+    if (!item) return false;
+    return (state.cramWrong || []).indexOf(item.id) >= 0 || (state.oxWrong || []).indexOf(item.id) >= 0;
+  }
+  function g77ComboCoin(c) { return c === 3 ? 5 : c === 5 ? 10 : (c >= 10 && c % 10 === 0) ? 30 : 0; }
+  function g77Xp(item, ok, c, k) { if (!ok) return 2; return 10 + (k.gc ? 5 : 0) + (k.calc ? 10 : 0) + Math.min(5, Math.floor(c / 5)); }
+  function g77Run(s) {
+    var g = s.g77;
+    if (!g || typeof g !== "object") { var p = g77P(); g = s.g77 = { c: 0, max: 0, ok: 0, n: 0, xp: 0, coin: 0, pbCombo: p.best.combo, pbScore: p.best.score[g77ScoreKey(s)] || 0 }; }
+    return g;
+  }
+  function g77ScoreKey(s) { return s.mode === "infinite" ? "inf" : s.mode === "endless" ? "endless" : "st-" + (s.diff || "normal"); }
+  var _g77Q = [];
+  function g77Push(x) { _g77Q.push(x); }
+  function g77AddXp(p, n) {
+    p.xp += n;
+    while (p.xp >= g77Need(p.lv) && p.lv < 99) {
+      p.xp -= g77Need(p.lv); p.lv += 1;
+      var coin = Math.min(200, 10 * p.lv), who = mainChar();
+      ensureWallet().coins += coin;
+      var arr = G77_LV_LINES[who] || G77_LV_LINES.hangyeol;
+      g77Push({ t: "lv", lv: p.lv, coin: coin, who: who, say: pickOne(arr).replace(/\{lv\}/g, p.lv) });
+    }
+  }
+  function g77CheckAch(p) {
+    var w = ensureWallet();
+    G77_ACH.forEach(function (a) {
+      if (p.ach[a.id] || !a.ok(p)) return;
+      p.ach[a.id] = Date.now();
+      if (_g77Seeding) return;
+      w.coins += a.coin;
+      g77Push({ t: "ach", label: a.label, desc: a.desc, coin: a.coin });
+    });
+  }
+  function g77CheckDaily(p) {
+    var w = ensureWallet(), ms = g77Missions(p.daily.d), n = 0;
+    ms.forEach(function (id) {
+      var m = G77_DAILY[id];
+      if (p.daily.done[id]) { n++; return; }
+      if ((p.daily[m.key] || 0) >= m.goal) { p.daily.done[id] = 1; n++; w.coins += m.coin; g77Push({ t: "day", label: m.label, coin: m.coin }); }
+    });
+    if (n >= 3 && !p.daily.all) { p.daily.all = 1; p.st.dailyAll += 1; }
+  }
+  function g77Answer(s, item, ok) {
+    if (!s || !item) return;
+    var p = g77P(), g = g77Run(s), k = g77Kind(item), ww = g77WasWrong(item), w = ensureWallet();
+    g.n += 1; p.st.cards += 1;
+    var mc = 0;
+    if (ok) {
+      g.c += 1; g.ok += 1; if (g.c > g.max) g.max = g.c;
+      p.st.ok += 1; p.daily.ok += 1;
+      if (k.gc) { p.st.gc += 1; p.daily.gc += 1; }
+      if (k.calc) { p.st.calc += 1; p.daily.calc += 1; }
+      if (ww) { p.st.fix += 1; p.daily.fix += 1; }
+      var gid = groupOfSubject(item.subject).id; p.st.g[gid] = (p.st.g[gid] || 0) + 1;
+      if (g.c > p.daily.combo) p.daily.combo = g.c;
+      if (g.c > p.best.combo) p.best.combo = g.c;
+      mc = g77ComboCoin(g.c);
+      if (mc) { w.coins += mc; g.coin += mc; }
+    } else g.c = 0;
+    var xp = g77Xp(item, ok, g.c, k);
+    g.xp += xp;
+    s.g77fx = { idx: s.index, c: ok ? g.c : 0, mile: mc ? g.c : 0, coin: mc, xp: xp, fix: !!(ok && ww), gc: k.gc, calc: k.calc };
+    g77AddXp(p, xp);
+    g77CheckAch(p); g77CheckDaily(p);
+    g77Snd(!ok ? "bad" : mc ? "combo" : "ok");
+  }
+  function g77RunEnd(s, win) {
+    if (!s || s.g77end) return s && s.g77end;
+    var p = g77P(), g = g77Run(s), w = ensureWallet();
+    var pct = g.n ? g.ok / g.n : 0, stars = pct >= 0.9 ? 3 : pct >= 0.7 ? 2 : 1;
+    p.st.runs += 1; p.daily.runs += 1;
+    var isStage = !s.mode || s.mode === "stage";
+    if (win && isStage) { p.st.clears += 1; if (s.diff === "hard") p.st.hard += 1; }
+    if (stars === 3 && g.n >= 5) p.st.star3 += 1;
+    if (stars >= 2 && g.n >= 5) p.daily.star2 += 1;
+    if (g.n >= 10 && g.ok === g.n) p.st.perfect += 1;
+    var key = g77ScoreKey(s), sc = s.score || 0;
+    var scoreRec = sc > 0 && sc > (g.pbScore || 0);
+    if (sc > (p.best.score[key] || 0)) p.best.score[key] = sc;
+    var comboRec = g.max >= 3 && g.max > (g.pbCombo || 0);
+    /* 연속 학습: 오늘 첫 판이면 하루 늘리고(어제도 했으면 +1, 아니면 1부터) 보너스 */
+    var today = g77Day(), stBonus = 0, stUp = false;
+    if (p.streak.last !== today) {
+      p.streak.n = p.streak.last === g77Day(-1) ? p.streak.n + 1 : 1;
+      p.streak.last = today; if (p.streak.n > p.streak.best) p.streak.best = p.streak.n;
+      stBonus = Math.min(50, 10 + 5 * (p.streak.n - 1)); stUp = true;
+      w.coins += stBonus;
+      g77Push({ t: "streak", n: p.streak.n, coin: stBonus });
+    }
+    var endXp = stars * 10 + (win ? 20 : 0);
+    g.xp += endXp;
+    var lv0 = p.lv;
+    g77AddXp(p, endXp);
+    s.g77end = { stars: stars, pct: Math.round(pct * 100), ok: g.ok, n: g.n, xp: g.xp, bonus: g.coin + stBonus, combo: g.max, comboRec: comboRec, scoreRec: scoreRec, streak: p.streak.n, stUp: stUp, stBonus: stBonus, lvUp: p.lv > lv0 };
+    g77CheckAch(p); g77CheckDaily(p);
+    saveState(state);
+    return s.g77end;
+  }
+  /* 효과음(Web Audio로 짧게 합성, 파일 없음)과 진동. 설정에서 끈다 */
+  var _g77ac = null;
+  function g77Snd(kind) {
+    var fs = g77Set();
+    if (fs.vib && navigator.vibrate) { try { navigator.vibrate({ ok: 12, bad: [30, 40, 30], combo: [20, 30, 40], lv: [40, 40, 80], ach: [25, 30, 25] }[kind] || 10); } catch (e) {} }
+    if (!fs.snd) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      if (!_g77ac) _g77ac = new AC();
+      var ac = _g77ac; if (ac.state === "suspended" && ac.resume) ac.resume();
+      var seq = { ok: [[660, 0, 0.08], [880, 0.07, 0.1]], bad: [[247, 0, 0.14], [196, 0.12, 0.18]], combo: [[660, 0, 0.07], [880, 0.06, 0.07], [1175, 0.12, 0.14]],
+        lv: [[523, 0, 0.1], [659, 0.1, 0.1], [784, 0.2, 0.1], [1047, 0.3, 0.24]], ach: [[784, 0, 0.08], [1175, 0.08, 0.2]] }[kind] || [[660, 0, 0.08]];
+      var t0 = ac.currentTime + 0.01;
+      seq.forEach(function (n) {
+        var o = ac.createOscillator(), gn = ac.createGain();
+        o.type = kind === "bad" ? "triangle" : "sine"; o.frequency.value = n[0];
+        gn.gain.setValueAtTime(0.0001, t0 + n[1]); gn.gain.exponentialRampToValueAtTime(0.13, t0 + n[1] + 0.012); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + n[1] + n[2]);
+        o.connect(gn); gn.connect(ac.destination); o.start(t0 + n[1]); o.stop(t0 + n[1] + n[2] + 0.03);
+      });
+    } catch (e) {}
+  }
+  /* 팝업 줄: 레벨 업(가운데 카드) · 업적/미션/연속(위쪽 알림). 하나씩 차례로, 누르면 닫힌다 */
+  function g77Flush() {
+    if (document.getElementById("g77-pop") || !_g77Q.length) return;
+    /* 문제를 읽는 중(답하기 전 카드)에는 가리지 않는다: 다음 답 화면이나 결과 화면에서 보여 준다 */
+    if (document.querySelector(".reigns-card:not(.is-rev)")) return;
+    var x = _g77Q.shift(), node, ms = 2200;
+    var closed = false, tmr = null;
+    var close = function () { if (closed) return; closed = true; if (tmr) clearTimeout(tmr); if (node && node.parentNode) node.remove(); setTimeout(g77Flush, 120); };
+    if (x.t === "lv") {
+      ms = 3200;
+      node = el("div", { class: "g77-pop g77-lv", id: "g77-pop", role: "status", "aria-live": "polite" }, [
+        el("div", { class: "g77-lv-card" }, [
+          el("p", { class: "g77-lv-k", text: "LEVEL UP!" }),
+          el("p", { class: "g77-lv-n num", text: "Lv." + x.lv }),
+          el("div", { class: "g77-lv-hero" }, [resultHero(x.who, "happy", "g77-lv-img")]),
+          el("p", { class: "g77-lv-say" }, [whoTag(x.who), el("span", { text: x.say })]),
+          el("p", { class: "g77-coin" }, [el("i", { class: "coin-dot", "aria-hidden": "true" }), el("b", { class: "num", text: "+" + x.coin }), el("span", { text: " 코인" })])
+        ])
+      ]);
+      g77Snd("lv");
+    } else {
+      var head = x.t === "ach" ? "업적 달성!" : x.t === "day" ? "일일 미션 완료!" : "연속 학습 " + x.n + "일째!";
+      var body = x.t === "ach" ? x.label : x.t === "day" ? x.label : (x.n >= 2 ? "끊지 말고 내일도 한 판!" : "내일도 하면 2일 연속!");
+      node = el("div", { class: "g77-pop g77-toast is-" + x.t, id: "g77-pop", role: "status", "aria-live": "polite" }, [
+        el("span", { class: "g77-badge", "aria-hidden": "true", text: x.t === "ach" ? "★" : x.t === "day" ? "✓" : "🔥" }),
+        el("span", { class: "g77-t" }, [el("b", { text: head }), el("span", { text: body })]),
+        el("span", { class: "g77-coin num", text: "+" + x.coin })
+      ]);
+      g77Snd("ach");
+    }
+    node.addEventListener("click", close);
+    document.body.appendChild(node);
+    tmr = setTimeout(close, ms);
+  }
+  function g77XpEl() {
+    var p = g77P(), need = g77Need(p.lv);
+    return el("div", { class: "g77-xp", "aria-label": "레벨 " + p.lv + " 경험치 " + p.xp + "/" + need }, [
+      el("b", { class: "num", text: "Lv." + p.lv }),
+      el("i", {}, [el("span", { style: "width:" + Math.min(100, p.xp / need * 100).toFixed(1) + "%" })])
+    ]);
+  }
+  function g77Stars(n) {
+    var box = el("div", { class: "g77-stars", role: "img", "aria-label": "별 " + n + "개" });
+    for (var i = 0; i < 3; i++) box.appendChild(el("span", { class: "g77-star" + (i < n ? " is-on" : ""), style: "--d:" + (i * 0.18) + "s", text: "★" }));
+    return box;
+  }
+  function g77ResultEl(s, runCoins) {
+    var e = s.g77end || g77RunEnd(s, !!s.cleared);
+    if (!e) return null;
+    var p = g77P(), need = g77Need(p.lv);
+    var box = el("div", { class: "g77-res" });
+    box.appendChild(g77Stars(e.stars));
+    var recs = [];
+    if (e.scoreRec) recs.push("점수");
+    if (e.comboRec) recs.push("최고 콤보");
+    if (recs.length) box.appendChild(el("p", { class: "g77-rec", text: "신기록! " + recs.join(" · ") }));
+    box.appendChild(el("p", { class: "g77-pct num", text: "정답률 " + e.pct + "% (" + e.ok + "/" + e.n + ")" }));
+    box.appendChild(el("div", { class: "g77-res-grid" }, [
+      el("p", {}, [el("span", { text: "획득 코인" }), el("b", { class: "num", text: "+" + ((runCoins || 0) + e.bonus) })]),
+      el("p", {}, [el("span", { text: "경험치" }), el("b", { class: "num", text: "+" + e.xp + " XP" })]),
+      el("p", {}, [el("span", { text: "최고 콤보" }), el("b", { class: "num", text: e.combo + "콤보" })])
+    ]));
+    if (e.bonus) box.appendChild(el("p", { class: "g77-res-note", text: "콤보·연속 학습 보너스 " + e.bonus + "코인 포함" }));
+    box.appendChild(el("div", { class: "g77-res-lv" }, [el("b", { class: "num", text: "Lv." + p.lv }),
+      el("i", {}, [el("span", { style: "width:" + Math.min(100, p.xp / need * 100).toFixed(1) + "%" })]),
+      el("span", { class: "num", text: p.xp + "/" + need })]));
+    box.appendChild(el("p", { class: "g77-res-streak" }, [el("b", { text: "연속 학습 " + e.streak + "일" }), el("span", { text: e.stUp ? " · 오늘 첫 판 +" + e.stBonus + "코인" : " · 오늘 몫 완료" })]));
+    return box;
+  }
+  /* 게임 시작 화면 위쪽: 레벨 · 연속 일수 · 일일 미션 3개 · 업적 배지(작은 시트) */
+  function g77HubEl() {
+    var p = g77P(), need = g77Need(p.lv), ms = g77Missions(p.daily.d);
+    var nAch = G77_ACH.filter(function (a) { return p.ach[a.id]; }).length;
+    var box = el("div", { class: "g77-hub" });
+    box.appendChild(el("div", { class: "g77-hub-top" }, [
+      el("b", { class: "g77-hub-lv num", text: "Lv." + p.lv }),
+      el("div", { class: "g77-hub-bar" }, [el("i", {}, [el("span", { style: "width:" + Math.min(100, p.xp / need * 100).toFixed(1) + "%" })]), el("span", { class: "num", text: p.xp + "/" + need + " XP" })]),
+      el("span", { class: "g77-hub-streak num", text: "🔥 " + g77StreakNow(p) + "일" })
+    ]));
+    var ul = el("ul", { class: "g77-missions", "aria-label": "일일 미션" });
+    ms.forEach(function (id) {
+      var m = G77_DAILY[id], v = Math.min(m.goal, p.daily[m.key] || 0), done = !!p.daily.done[id];
+      ul.appendChild(el("li", { class: done ? "is-done" : "" }, [
+        el("span", { class: "g77-m-l", text: (done ? "✓ " : "") + m.label }),
+        el("span", { class: "g77-m-v num", text: done ? "+" + m.coin + " 받음" : v + "/" + m.goal + " · " + m.coin + "코인" })
+      ]));
+    });
+    box.appendChild(el("p", { class: "g77-hub-h", text: "오늘의 미션" }));
+    box.appendChild(ul);
+    box.appendChild(el("button", { class: "btn btn-secondary g77-ach-btn", type: "button", onclick: g77OpenAch, text: "업적 배지 " + nAch + "/" + G77_ACH.length }));
+    return box;
+  }
+  function g77OpenAch() {
+    if (document.getElementById("g77-sheet")) return;
+    var p = g77P();
+    var close = function () { var n = document.getElementById("g77-sheet"); if (n) n.remove(); };
+    var list = el("ul", { class: "g77-ach-list" });
+    G77_ACH.forEach(function (a) {
+      var got = !!p.ach[a.id];
+      list.appendChild(el("li", { class: got ? "is-got" : "" }, [
+        el("span", { class: "g77-badge", "aria-hidden": "true", text: got ? "★" : "☆" }),
+        el("span", { class: "g77-t" }, [el("b", { text: a.label }), el("span", { text: a.desc })]),
+        el("span", { class: "g77-coin num", text: got ? "달성" : a.coin + "코인" })
+      ]));
+    });
+    var nAch = G77_ACH.filter(function (a) { return p.ach[a.id]; }).length;
+    var sheet = el("div", { class: "g77-sheet", id: "g77-sheet" }, [
+      el("div", { class: "g77-sheet-panel", role: "dialog", "aria-modal": "true", "aria-label": "업적 배지" }, [
+        el("div", { class: "g77-sheet-head" }, [el("b", { text: "업적 배지 " + nAch + "/" + G77_ACH.length }), el("button", { class: "btn btn-small", type: "button", text: "닫기", onclick: close })]),
+        list
+      ])
+    ]);
+    sheet.addEventListener("click", function (e) { if (e.target === sheet) close(); });
+    document.body.appendChild(sheet);
+  }
   function viewReignsPlay() {
     var s = state.reigns;
     if (!s || !s.queue) return viewReignsHub();
@@ -20807,6 +21275,7 @@ exports.withFuzzing = withFuzzing;
     if (!item) return viewReignsHub();
     var who = s.who || pickCramWho(s.index);
     if (!s.revealed) {
+      var gp0 = document.getElementById("g77-pop"); if (gp0) gp0.click();
       who = s.who = mainChar();
       if (!s.ask || s.ask.idx !== s.index || s.ask.who !== who) {
         var danger0 = s.mode === "infinite" ? (s.hp <= infDmg(infStage(s.index))) : (s.groups || []).some(function (gid) { return s.gauges[gid] <= 2; });
@@ -20821,7 +21290,8 @@ exports.withFuzzing = withFuzzing;
       el("p", { class: "cram-count", text: item.title || subjectLabel(item.subject) }),
       el("span", { class: "round-pill num", text: (s.mode === "endless" || s.mode === "infinite") ? "∞ " + (s.index + 1) : (s.index + 1) + "/" + stageTotal(s) }),
       diffPill(s),
-      calcBtn()
+      calcBtn(),
+      g77XpEl()
     ]));
     var hintG = groupOfSubject(item.subject).id;
     var gRow = s.mode === "infinite" ? infHpEl(s) : reignsGaugesEl(s, s._hintG, s._hintA);
@@ -20890,7 +21360,15 @@ exports.withFuzzing = withFuzzing;
       /* 0.7.74 답 화면: 큰 정답!/틀림!, 전신 캐릭터(맞으면 웃음·틀리면 슬픔), 풀이는 버튼을 눌러야 펼친다 */
       var ok = !!s.lastOk;
       card.classList.add("is-verdict", ok ? "is-ok" : "is-bad");
-      var vd = el("div", { class: "rv-head" }, [el("p", { class: "rv-verdict " + (ok ? "is-ok" : "is-bad"), role: "status", text: ok ? "정답!" : "틀림!" })]);
+      var gfx = s.g77fx && s.g77fx.idx === s.index ? s.g77fx : null;
+      var vd = el("div", { class: "rv-head" }, [el("p", { class: "rv-verdict " + (ok ? "is-ok" : "is-bad"), role: "status" }, [
+        document.createTextNode(ok ? "정답!" : "틀림!"),
+        ok && gfx && gfx.c >= 2 ? el("span", { class: "rv-combo num" + (gfx.mile ? " is-mile" : ""), text: gfx.c + "콤보" }) : null])]);
+      if (gfx) vd.appendChild(el("p", { class: "g77-gain num" }, [el("span", { text: "+" + gfx.xp + " XP" }), gfx.fix ? el("span", { class: "is-fix", text: "다시 맞힘!" }) : null, gfx.gc && ok ? el("span", { text: "기출" }) : null]));
+      if (ok && gfx && gfx.mile) {
+        card.classList.add("is-combo-hi");
+        card.appendChild(el("div", { class: "g77-burst", "aria-hidden": "true" }, [el("b", { class: "num", text: gfx.mile + "콤보!" }), el("span", { class: "num", text: "+" + gfx.coin + "코인" })]));
+      }
       if (s.mode === "infinite" && s.lastTimeout) vd.appendChild(el("p", { class: "rv-sub inf-timeout", text: "시간 초과! 오답으로 처리했다." }));
       card.appendChild(vd);
       card.appendChild(el("div", { class: "rv-hero" }, [resultHero(who, ok ? "happy" : "sad", "rv-char" + (ok ? "" : " is-sad"))]));
@@ -21138,6 +21616,7 @@ exports.withFuzzing = withFuzzing;
     var play = el("div", { class: "stage-result is-clear" });
     play.appendChild(el("h1", { class: "clear-title", text: "스테이지 클리어!" }));
     play.appendChild(el("div", { class: "result-meta" }, [diffPill(s), el("span", { class: "num", text: stageTotal(s) + "/" + stageTotal(s) + " 라운드 · 점수 " + (s.score || 0) })]));
+    play.appendChild(g77ResultEl(s, r.coins));
     var hero = el("div", { class: "result-hero" }, [resultHero(who, "happy", "")]);
     play.appendChild(hero);
     play.appendChild(el("p", { class: "result-say" }, [el("span", {}, [whoTag(who), document.createTextNode(s.clearLine || (CHEER[who] ? CHEER[who][0] : "클리어!"))])]));
@@ -21147,7 +21626,7 @@ exports.withFuzzing = withFuzzing;
     if (r.ticket) play.appendChild(el("p", { class: "ticket-new", text: "뽑기권 1장을 받았다!" }));
     play.appendChild(el("div", { class: "result-btns" }, [
       el("button", { class: "btn review-cta", type: "button", text: "다시 한 판", onclick: function () { startReigns({ diff: s.diff, groups: s.groups }); } }),
-      el("button", { class: "btn btn-secondary review-cta", type: "button", text: "수집품", onclick: function () { go("수집품"); } }),
+      el("button", { class: "btn btn-secondary review-cta", type: "button", text: "강화 (코인 쓰기)", onclick: function () { _shopMsg = ""; go("코스튬", "강화"); } }),
       el("button", { class: "btn btn-secondary review-cta", type: "button", text: "게임 홈", onclick: function () { go("복습"); } })
     ]));
     return [play];
@@ -21161,6 +21640,7 @@ exports.withFuzzing = withFuzzing;
     var play = el("div", { class: "stage-result is-over reigns-play" });
     play.appendChild(el("h1", { text: "게임 오버" }));
     play.appendChild(el("div", { class: "result-meta" }, [diffPill(s), el("span", { class: "num", text: "라운드 " + Math.min((s.index || 0) + 1, stageTotal(s)) + "/" + stageTotal(s) + " · 점수 " + (s.score || 0) })]));
+    if (s.queue) play.appendChild(g77ResultEl(s, r.coins));
     play.appendChild(el("div", { class: "result-hero" }, [resultHero(s.who || "hangyeol", "sad", "is-sad")]));
     play.appendChild(el("p", { class: "result-say reigns-say" }, [s.talk ? el("span", {}, [whoTag(s.who || mainChar()), el("span", { html: s.talk })]) : el("span", { html: "게이지가 바닥났다." })]));
     play.appendChild(el("p", { class: "coin-big" }, [el("i", { class: "coin-dot", "aria-hidden": "true" }), el("b", { class: "num", text: "+" + r.coins }), el("span", { text: " 코인" })]));
@@ -21177,6 +21657,7 @@ exports.withFuzzing = withFuzzing;
     }
     play.appendChild(el("div", { class: "result-btns" }, [
       el("button", { class: "btn review-cta", type: "button", text: "다시 한 판", onclick: function () { startReigns({ diff: s.diff, groups: s.groups }); } }),
+      el("button", { class: "btn btn-secondary review-cta", type: "button", text: "강화 (코인 쓰기)", onclick: function () { _shopMsg = ""; go("코스튬", "강화"); } }),
       el("button", { class: "btn btn-secondary review-cta", type: "button", text: "게임 홈", onclick: function () { go("복습"); } })
     ]));
     return [play];
@@ -21599,6 +22080,11 @@ exports.withFuzzing = withFuzzing;
     ]));
     page.appendChild(el("h2", { text: "기록" }));
     page.appendChild(el("p", { class: "hub-note", text: "누적 클리어 " + w.clears + "판 · 모은 옷 " + CRAM_CHARS.reduce(function (a, c) { return a + w.owned[c.id].length; }, 0) + "/30벌 · 틀린 카드 " + ((state.cramWrong || []).length + (state.oxWrong || []).length) + "장(어려움에서 다시 나온다)" }));
+    var fs = g77Set();
+    page.appendChild(el("h2", { text: "효과" }));
+    page.appendChild(el("div", { class: "g77-set" }, [["snd", "효과음"], ["vib", "진동 (지원하는 폰만)"]].map(function (x) {
+      return el("label", { class: "g77-set-row" }, [el("input", { type: "checkbox", checked: fs[x[0]] ? true : null, "data-fx": x[0], onchange: function (e) { g77Set()[x[0]] = !!e.target.checked; saveState(state); if (e.target.checked) g77Snd("ok"); } }), el("span", { text: x[1] })]);
+    })));
     page.appendChild(el("h2", { text: "계정 · 동기화" }));
     page.appendChild(syncSection());
     page.appendChild(el("h2", { text: "비공식 팬아트 고지" }));
@@ -21693,6 +22179,7 @@ exports.withFuzzing = withFuzzing;
   window.ElecStudyTest.allCramCards = allCramCards;
   window.ElecStudyTest.CRAM_BLANKS = CRAM_BLANKS;
   window.ElecStudyTest.answerReigns = answerReigns;
+  window.ElecStudyTest.g77 = { prog: g77P, need: g77Need, ach: G77_ACH, daily: G77_DAILY, missions: g77Missions, queue: function () { return _g77Q; }, flush: g77Flush, _chk: g77CheckAch, openAch: g77OpenAch, set: g77Set, lines: G77_LV_LINES, day: g77Day };
   window.ElecStudyTest.inf = { INF: INF, infStage: infStage, infDmg: infDmg, infMult: infMult, infBatch: infBatch, startInf: startInf, nickCheck: nickCheck, setNick: setNick, socialMeta: socialMeta, infBest: infBest, RANK_API: RANK_API, flush: socialFlush, infTimeLimit: infTimeLimit, infIsCalcItem: infIsCalcItem, INF_TIME: INF_TIME, reigns: function () { return state.reigns; }, unit: unitOf };
   window.ElecStudyTest.reignsAdvance = reignsAdvance;
   window.ElecStudyTest.viewCramDeck = viewCramDeck;
@@ -21790,6 +22277,7 @@ exports.withFuzzing = withFuzzing;
       }
     } else kids = viewPilgi(route);
     shell(tab, kids, { immersive: immersive || gateView, game: game, scene: scene, fx: fx });
+    setTimeout(g77Flush, 60);
   }
 
   /* 테스트용: 브라우저가 해시 변경을 제한(과다 이동 차단)해도 마지막 go 경로를 그대로 그린다 */
