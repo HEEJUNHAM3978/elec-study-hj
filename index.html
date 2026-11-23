@@ -2956,6 +2956,26 @@ html[data-bg]:not([data-bg="b01"]) .app-shell.is-game .ox-scene-art::after { bac
 .nick-msg.is-bad { color: #b91c1c; }
 
 .review-exit{white-space:nowrap;flex-shrink:0}
+
+/* ===== 0.7.74 카드 답 화면: 큰 정답!/틀림! · 전신 캐릭터 · 풀이 보기 버튼 ===== */
+.reigns-card.is-verdict { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: stretch; gap: 0.2rem; padding: 0.5rem 0.4rem 0.6rem; }
+.reigns-card.is-verdict .rv-head { flex: 0 0 auto; text-align: center; }
+.rv-verdict { margin: 0; font-size: clamp(3rem, 9.5dvh, 5.2rem); line-height: 1.05; font-weight: 900; letter-spacing: -0.02em; }
+.rv-verdict.is-ok { color: #16a34a; text-shadow: 0 3px 0 rgba(22,163,74,0.18); }
+.rv-verdict.is-bad { color: #dc2626; text-shadow: 0 3px 0 rgba(220,38,38,0.18); }
+.rv-sub { margin: 0.1rem 0 0; font-size: 0.85rem; font-weight: 700; color: #b91c1c; }
+.reigns-card.is-verdict .rv-hero { flex: 1 1 0; min-height: 0; display: flex; justify-content: center; align-items: flex-end; }
+.reigns-card.is-verdict .rv-hero .dress-img { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.25)); }
+.reigns-card.is-verdict .rv-hero .dress-img.is-sad { filter: grayscale(0.35) drop-shadow(0 6px 12px rgba(0,0,0,0.25)); }
+.reigns-card.is-verdict .rv-more { flex: 0 0 auto; align-self: center; margin: 0.15rem auto 0; min-height: 2.75rem; padding: 0.55rem 1.6rem; border-radius: 999px; border: 0; background: #1e3a8a; color: #fff; font-size: 1.05rem; font-weight: 800; position: relative; z-index: 3; box-shadow: 0 3px 10px rgba(0,0,0,0.2); cursor: pointer; }
+.reigns-card.is-verdict .rv-panel { display: none; }
+.reigns-card.is-verdict.rv-open .rv-panel { display: block; position: absolute; left: 0.4rem; right: 0.4rem; top: 0.4rem; bottom: 3.6rem; z-index: 2; overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; background: #fff; border-radius: 0.8rem; padding: 0.6rem 0.7rem 0.9rem; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+.reigns-card.is-verdict.rv-open .rv-panel .cram-fig { height: auto; max-height: none; flex: none; margin-bottom: 0.5rem; }
+.reigns-card.is-verdict.rv-open .rv-panel .fig-frame { flex: none; height: auto; }
+.reigns-card.is-verdict.rv-open .rv-panel .web-img { height: auto; max-height: 38dvh; }
+.reigns-card.is-verdict.rv-open .rv-panel .cram-fig:not(.web-fig) .fig-frame { height: 30dvh; }
+.reigns-card.is-verdict .rv-panel .reigns-explain { margin: 0; font-size: 1rem; line-height: 1.6; }
+.reigns-card.is-verdict.rv-open .rv-hero { visibility: hidden; }
 </style>
 </head>
 <body>
@@ -14968,7 +14988,7 @@ exports.withFuzzing = withFuzzing;
     { id: "설정", label: "설정" }
   ];
   /* 0.7.68: 앱 버전은 이 상수 하나만 고친다(제목 옆·설정 화면이 여기서 가져간다) */
-  var APP_VERSION = "0.7.73";
+  var APP_VERSION = "0.7.74";
   window.ElecAppVersion = APP_VERSION;
   var TAB_OF = { "필기": "설정", "실기": "설정", "공식": "설정" };
 
@@ -19066,6 +19086,7 @@ exports.withFuzzing = withFuzzing;
     }
     cardEl.addEventListener("pointerdown", function (e) {
       if (locked) return;
+      if (e.target && e.target.closest && e.target.closest(".rv-panel")) return;
       var onFig = !!(opts.figSwipe && e.target && e.target.closest && e.target.closest(".fig-frame"));
       if (!onFig && e.target && e.target.closest && e.target.closest("button, a, .fig-frame, .cram-blank")) return;
       if (e.pointerType === "mouse" && e.button !== 0) return;
@@ -20311,10 +20332,21 @@ exports.withFuzzing = withFuzzing;
 
   /* 0.7.73: 결과 화면 캐릭터는 머리부터 발끝까지 보이는 전신 그림만 쓴다(장면 그림은 잘려 있어 안 씀).
      game-art/vt/<id>/<id>-full-happy.webp, <id>-full-sad.webp 파일을 넣으면 자동으로 그 그림으로 바뀌고, 없으면 지금 입은 의상 전신 그림을 쓴다. */
+  var FULL_OK = {};
+  function preloadFull(who) {
+    ["happy", "sad"].forEach(function (m) {
+      var p = vtPath(who, who + "-full-" + m + ".webp");
+      if (FULL_OK[p] !== undefined) return;
+      FULL_OK[p] = 0;
+      try { var pre = new Image(); pre.onload = function () { FULL_OK[p] = pre.naturalHeight > pre.naturalWidth ? 1 : -1; }; pre.onerror = function () { FULL_OK[p] = -1; }; pre.src = p; } catch (e) {}
+    });
+  }
   function resultHero(who, mood, cls) {
     var im = dressImg(who, "is-result is-full " + (cls || ""));
     var drop = vtPath(who, who + "-full-" + mood + ".webp");
-    try { var pre = new Image(); pre.onload = function () { if (pre.naturalHeight > pre.naturalWidth) { im.src = drop; im.setAttribute("data-full", mood); } }; pre.src = drop; } catch (e) {}
+    if (FULL_OK[drop] === 1) { im.src = drop; im.setAttribute("data-full", mood); return im; }
+    if (FULL_OK[drop] === -1) return im;
+    try { var pre = new Image(); pre.onload = function () { var okf = pre.naturalHeight > pre.naturalWidth; FULL_OK[drop] = okf ? 1 : -1; if (okf) { im.src = drop; im.setAttribute("data-full", mood); } }; pre.onerror = function () { FULL_OK[drop] = -1; }; pre.src = drop; } catch (e) {}
     return im;
   }
   function dressImg(who, cls) {
@@ -20669,13 +20701,13 @@ exports.withFuzzing = withFuzzing;
     var rightLabel = isCh ? (chSw ? item.left : item.right) : "O";
     var chX = el("span", { class: "reigns-choice is-x" + (isCh ? " is-ch" : " is-big"), html: leftLabel });
     var chO = el("span", { class: "reigns-choice is-o" + (isCh ? " is-ch" : " is-big"), html: rightLabel });
-    if (s.revealed) { card.appendChild(chX); card.appendChild(chO); }
     var imp = itemImportance(item);
     if (s.heal && !s.revealed) card.appendChild(el("span", { class: "reigns-heal", text: "회복 문제 +" + (s.mode === "infinite" ? INF.heal : healAmt()) }));
     card.classList.toggle("is-heal", !!s.heal);
     card.appendChild(el("span", { class: "reigns-imp imp-" + imp, "aria-label": "중요도 " + imp + "점", text: imp + "점" }));
+    if (!s.revealed) preloadFull(who);
     var port = el("div", { class: "reigns-portrait" });
-    port.appendChild(charSprite(who, face, faceImg, { name: false, speak: !s.revealed }));
+    if (!s.revealed) port.appendChild(charSprite(who, face, faceImg, { name: false, speak: !s.revealed }));
     var talkRow = el("div", { class: "reigns-talk-row" });
     /* 0.7.64 캐릭터 양옆에 고를 답을 미리(흐리게) 보여 주고, 밀수록 그쪽이 커지고 밝아진다 */
     if (!s.revealed) {
@@ -20683,24 +20715,42 @@ exports.withFuzzing = withFuzzing;
       talkRow.appendChild(el("div", { class: "reigns-side is-left" }, [chX]));
       talkRow.appendChild(port);
       talkRow.appendChild(el("div", { class: "reigns-side is-right" }, [chO]));
-    } else talkRow.appendChild(port);
-    card.appendChild(talkRow);
+    }
+    if (!s.revealed) card.appendChild(talkRow);
     var fig = item.qfig ? quizFigBlock(item.qfig) : renderCramFig(item.fig, item.title, s.revealed ? null : lkTokens({ q: item.q + (item.type === "choice" ? " " + (item.left || "") + " " + (item.right || "") : ""), explain: item.explain, title: item.kind === "cram" ? item.title : "" }));
     card.classList.add(fig ? "has-fig" : "no-fig");
-    if (fig) {
-      if (!s.revealed) card.appendChild(el("p", { class: "reigns-q-side is-top", html: item.q || item.title }));
+    if (fig && !s.revealed) {
+      card.appendChild(el("p", { class: "reigns-q-side is-top", html: item.q || item.title }));
       fitFigBox(fig); card.appendChild(fig);
     }
     else if (!s.revealed) {
       card.appendChild(el("p", { class: "reigns-q-big" }, [el("span", { class: "q-in", html: item.q || item.title })]));
     }
     if (s.revealed) {
+      /* 0.7.74 답 화면: 큰 정답!/틀림!, 전신 캐릭터(맞으면 웃음·틀리면 슬픔), 풀이는 버튼을 눌러야 펼친다 */
       var ok = !!s.lastOk;
+      card.classList.add("is-verdict", ok ? "is-ok" : "is-bad");
+      var vd = el("div", { class: "rv-head" }, [el("p", { class: "rv-verdict " + (ok ? "is-ok" : "is-bad"), role: "status", text: ok ? "정답!" : "틀림!" })]);
+      if (s.mode === "infinite" && s.lastTimeout) vd.appendChild(el("p", { class: "rv-sub inf-timeout", text: "시간 초과! 오답으로 처리했다." }));
+      card.appendChild(vd);
+      card.appendChild(el("div", { class: "rv-hero" }, [resultHero(who, ok ? "happy" : "sad", "rv-char" + (ok ? "" : " is-sad"))]));
       var box = el("div", { class: "reigns-explain ox-feedback " + (ok ? "is-ok" : "is-bad") });
-      if (s.mode === "infinite" && s.lastTimeout) box.appendChild(el("p", { class: "answer-line inf-timeout", text: "시간 초과! 오답으로 처리했다." }));
       box.appendChild(el("p", { class: "answer-line", text: (ok ? "정답이다." : "오답이다.") + (item.type === "choice" ? "" : (item.truth ? " 이 카드는 O(맞는 말)." : " 이 카드는 X(틀린 말).")) }));
       if (item.explain) box.appendChild(el("p", { html: item.explain }));
-      card.appendChild(box);
+      var panel = el("div", { class: "rv-panel", id: "rv-panel", "aria-hidden": "true" });
+      if (fig) { fitFigBox(fig); panel.appendChild(fig); }
+      panel.appendChild(box);
+      card.appendChild(panel);
+      var moreBtn = el("button", { class: "rv-more", type: "button", "aria-controls": "rv-panel", "aria-expanded": "false", text: "풀이 보기" });
+      moreBtn.addEventListener("click", function () {
+        var open = !card.classList.contains("rv-open");
+        card.classList.toggle("rv-open", open);
+        panel.setAttribute("aria-hidden", open ? "false" : "true");
+        moreBtn.setAttribute("aria-expanded", open ? "true" : "false");
+        moreBtn.textContent = open ? "풀이 닫기" : "풀이 보기";
+        if (open) { panel.scrollTop = 0;}
+      });
+      card.appendChild(moreBtn);
     }
     var stage = el("div", { class: "reigns-stage ox-stage" });
     stage.appendChild(card);
