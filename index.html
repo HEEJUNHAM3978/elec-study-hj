@@ -2868,6 +2868,40 @@ html[data-bg]:not([data-bg="b01"]) .app-shell.is-game .ox-scene-art::after { bac
 .tier-badge.tier-B { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
 .tier-badge.tier-C { background: #64748b; }
 .tier-badge.tier-base { background: #0f2a4a; }
+/* 0.7.80 선물함 · 10+1연차 */
+.gift-btn, .main-btn.is-gift { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; }
+.gift-dot { position: absolute; top: -0.4rem; right: -0.4rem; min-width: 1.35rem; height: 1.35rem; padding: 0 0.3rem; border-radius: 999px; background: #ef4444; color: #fff; font-size: 0.78rem; font-weight: 800; line-height: 1.35rem; text-align: center; box-shadow: 0 0 0 2px #fff; }
+.gift-box { display: flex; flex-direction: column; gap: 0.8rem; }
+.gift-box h1 { margin: 0; font-size: 1.7rem; }
+.gift-sheet { display: flex; flex-direction: column; gap: 0.6rem; padding: 0.7rem; border-radius: 1rem; background: rgba(255,255,255,0.96); box-shadow: 0 6px 24px rgba(15,23,42,0.18); color: #0f172a; }
+.gift-item { display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem; border-radius: 0.8rem; background: #fff7ed; border: 1px solid #fed7aa; }
+.gift-item.is-got { background: #f1f5f9; border-color: #e2e8f0; opacity: 0.8; }
+.gift-item-ico { font-size: 1.8rem; }
+.gift-item-body { flex: 1; min-width: 0; }
+.gift-item-body p { margin: 0.15rem 0 0; font-size: 0.88rem; }
+.gift-title { font-size: 1rem; }
+.gift-reward { color: #b45309; font-weight: 700; }
+.gift-claim { min-width: 4.2rem; }
+.gift-msg { margin: 0; padding: 0.6rem 0.8rem; border-radius: 0.7rem; background: #dcfce7; color: #166534; font-weight: 700; }
+.cg-pay { flex-wrap: wrap; }
+.cg-multi { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15; background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff; border: 0; }
+.cg-multi span { font-size: 0.78rem; opacity: 0.95; }
+.cg-multi[disabled] { background: #cbd5e1; color: #475569; }
+.cg-multi-sum { margin: 0; font-size: 0.95rem; }
+.cg-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.4rem; }
+.cg-cell { position: relative; display: flex; flex-direction: column; align-items: center; padding: 0.3rem 0.2rem 0.35rem; border-radius: 0.7rem; background: rgba(255,255,255,0.95); border: 2px solid #cbd5e1; color: #0f172a; min-width: 0; animation: cg-pop 0.35s ease-out both; }
+.cg-cell.tier-S { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,0.6); }
+.cg-cell.tier-A { border-color: #a855f7; }
+.cg-cell.tier-B { border-color: #3b82f6; }
+.cg-cell .tier-badge { position: absolute; top: 0.2rem; left: 0.2rem; font-size: 0.65rem; z-index: 1; }
+.cg-cell-img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; }
+.cg-cell-name { margin: 0.1rem 0 0; font-size: 0.7rem; font-weight: 700; text-align: center; line-height: 1.15; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cg-cell-tag { font-size: 0.62rem; color: #64748b; }
+.cg-cell.is-new .cg-cell-tag { color: #dc2626; font-weight: 800; }
+.cg-cell.is-bonus { border-color: #ef4444; background: #fff1f2; }
+.cg-bonus { position: absolute; top: -0.45rem; right: -0.2rem; padding: 0.05rem 0.4rem; border-radius: 999px; background: #ef4444; color: #fff; font-size: 0.66rem; font-weight: 800; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+@keyframes cg-pop { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .cg-cell { animation: none; } }
 /* 캐릭터 뽑기 */
 .cg-intro { background: #fff; border: 1.5px solid #c9d4e3; border-radius: 14px; padding: 0.8rem; margin: 0.6rem 0; }
 .cg-rates { display: flex; flex-wrap: wrap; gap: 0.7rem; margin: 0 0 0.4rem; }
@@ -15239,7 +15273,7 @@ exports.withFuzzing = withFuzzing;
     { id: "설정", label: "설정" }
   ];
   /* 0.7.68: 앱 버전은 이 상수 하나만 고친다(제목 옆·설정 화면이 여기서 가져간다) */
-  var APP_VERSION = "0.7.79";
+  var APP_VERSION = "0.7.80";
   window.ElecAppVersion = APP_VERSION;
   var TAB_OF = { "필기": "설정", "실기": "설정", "공식": "설정" };
 
@@ -19958,7 +19992,8 @@ exports.withFuzzing = withFuzzing;
   function charPull(pay, rng) {
     rng = rng || Math.random;
     var w = ensureWallet(), c = w.chars;
-    if (pay === "ticket") { if (w.tickets < 1) return null; w.tickets -= 1; }
+    if (pay === "free") {}
+    else if (pay === "ticket") { if (w.tickets < 1) return null; w.tickets -= 1; }
     else { if (w.coins < CHAR_PULL_COIN) return null; w.coins -= CHAR_PULL_COIN; }
     var tier;
     if (c.pity >= CHAR_PITY - 1) tier = "S";
@@ -19977,6 +20012,70 @@ exports.withFuzzing = withFuzzing;
     saveState(state);
     return res;
   }
+  /* 0.7.80: 10+1연차. 10회분(뽑기권 10장 또는 코인 10회분)만 내고 11번 뽑는다. 마지막 1장은 보너스 */
+  var MULTI_PAY = 10, MULTI_GET = 11;
+  function charPullMulti(pay) {
+    var w = ensureWallet();
+    if (pay === "ticket") { if (w.tickets < MULTI_PAY) return null; w.tickets -= MULTI_PAY; }
+    else { if (w.coins < CHAR_PULL_COIN * MULTI_PAY) return null; w.coins -= CHAR_PULL_COIN * MULTI_PAY; }
+    var out = [];
+    for (var i = 0; i < MULTI_GET; i++) { var r = charPull("free"); if (!r) break; r.pay = pay; if (i === MULTI_GET - 1) r.bonus = true; out.push(r); }
+    saveState(state);
+    return { multi: out, pay: pay };
+  }
+  /* 0.7.80: 선물함. 새 선물은 GIFTS 끝에 고정 id로 더한다. 받은 기록은 wallet.gifts[id] = 받은 시각(클라우드 저장에 함께 올라간다) */
+  var GIFTS = [
+    { id: "gift-tickets-50-v0780", title: "희준님 선물", desc: "뽑기권 50장이 도착했어요!", reward: { tickets: 50 } }
+  ];
+  function giftWallet(w) { if (!w.gifts || typeof w.gifts !== "object" || Array.isArray(w.gifts)) w.gifts = {}; return w.gifts; }
+  function giftRewardText(rw) { var a = []; if (rw.tickets) a.push("뽑기권 " + rw.tickets + "장"); if (rw.coins) a.push("코인 " + rw.coins + "개"); return a.join(" · "); }
+  function giftsPending() { var w = ensureWallet(), g = giftWallet(w); return GIFTS.filter(function (x) { return !g[x.id]; }); }
+  function claimGift(id) {
+    var w = ensureWallet(), g = giftWallet(w);
+    var x = GIFTS.filter(function (q) { return q.id === id; })[0];
+    if (!x || g[id]) return false;
+    var rw = x.reward || {};
+    if (rw.tickets) w.tickets += rw.tickets;
+    if (rw.coins) w.coins += rw.coins;
+    g[id] = Date.now();
+    saveState(state);
+    return true;
+  }
+  var _giftMsg = "", _giftFrom = null;
+  function giftBadge(cls) {
+    var n = giftsPending().length;
+    return n ? el("span", { class: "gift-dot num" + (cls ? " " + cls : ""), "aria-label": "받지 않은 선물 " + n + "개", text: String(n) }) : null;
+  }
+  function giftBtn(from) {
+    var kids = [el("span", { class: "gift-ico", "aria-hidden": "true", text: "🎁" }), el("span", { text: "선물함" })];
+    var b = giftBadge(); if (b) kids.push(b);
+    return el("button", { class: "btn btn-secondary gift-btn", type: "button", onclick: function () { _giftMsg = ""; _giftFrom = from || null; go("수집품", "선물함"); } }, kids);
+  }
+  function viewGiftBox() {
+    var w = ensureWallet(), g = giftWallet(w);
+    var page = el("div", { class: "gift-box" });
+    var back = _giftFrom === "뽑기" ? ["캐릭터 뽑기", function () { go("수집품", "캐릭터뽑기"); }] : _giftFrom === "수집품" ? ["수집품", function () { go("수집품"); }] : ["홈", function () { go("홈"); }];
+    page.appendChild(backBtn(back[0], back[1]));
+    page.appendChild(el("h1", { text: "선물함" }));
+    page.appendChild(walletStrip(w));
+    var pend = giftsPending();
+    var sheet = el("div", { class: "gift-sheet", role: "list" });
+    GIFTS.slice().reverse().forEach(function (x) {
+      var got = !!g[x.id];
+      sheet.appendChild(el("div", { class: "gift-item" + (got ? " is-got" : ""), role: "listitem", "data-id": x.id }, [
+        el("span", { class: "gift-item-ico", "aria-hidden": "true", text: "🎁" }),
+        el("div", { class: "gift-item-body" }, [el("b", { class: "gift-title", text: x.title }), el("p", { class: "gift-desc", text: x.desc }), el("p", { class: "gift-reward", text: "보상: " + giftRewardText(x.reward || {}) })]),
+        el("button", { class: "btn gift-claim" + (got ? " btn-secondary" : ""), type: "button", disabled: got ? true : null, text: got ? "받음" : "받기",
+          onclick: function () { if (claimGift(x.id)) _giftMsg = giftRewardText(x.reward || {}) + "을(를) 받았다!"; render(); } })
+      ]));
+    });
+    page.appendChild(sheet);
+    page.appendChild(el("button", { class: "btn gift-all", type: "button", disabled: pend.length ? null : true, text: pend.length ? "전체 받기 (" + pend.length + ")" : "받을 선물이 없다",
+      onclick: function () { var a = []; pend.forEach(function (x) { if (claimGift(x.id)) a.push(giftRewardText(x.reward || {})); }); _giftMsg = a.length ? a.join(" · ") + "을(를) 받았다!" : ""; render(); } }));
+    if (_giftMsg) page.appendChild(el("p", { class: "gift-msg", role: "status", text: _giftMsg }));
+    page.appendChild(el("button", { class: "btn btn-secondary review-cta", type: "button", text: "캐릭터 뽑기 하러 가기", onclick: function () { _charAnim = null; go("수집품", "캐릭터뽑기"); } }));
+    return [page];
+  }
   var _charAnim = null, _charMsg = "", _mainTalk = null, _detailTalk = null;
   function viewCharGacha() {
     var w = ensureWallet(), c = w.chars;
@@ -19989,9 +20088,33 @@ exports.withFuzzing = withFuzzing;
         el("button", { class: "btn cg-pay-coin", type: "button", disabled: w.coins >= CHAR_PULL_COIN ? null : true, text: (again ? "한 번 더 · " : "") + CHAR_PULL_COIN + "코인",
           onclick: function () { var r = charPull("coin"); if (r) { _charAnim = r; render(); } } }),
         el("button", { class: "btn btn-secondary cg-pay-ticket", type: "button", disabled: w.tickets >= 1 ? null : true, text: (again ? "한 번 더 · " : "") + "뽑기권 1장 (" + w.tickets + ")",
-          onclick: function () { var r = charPull("ticket"); if (r) { _charAnim = r; render(); } } })
+          onclick: function () { var r = charPull("ticket"); if (r) { _charAnim = r; render(); } } }),
+        el("button", { class: "btn cg-multi cg-multi-coin", type: "button", disabled: w.coins >= CHAR_PULL_COIN * MULTI_PAY ? null : true,
+          onclick: function () { var r = charPullMulti("coin"); if (r) { _charAnim = r; render(); } } }, [el("b", { text: "10+1연차" }), el("span", { text: CHAR_PULL_COIN * MULTI_PAY + "코인" })]),
+        el("button", { class: "btn cg-multi cg-multi-ticket", type: "button", disabled: w.tickets >= MULTI_PAY ? null : true,
+          onclick: function () { var r = charPullMulti("ticket"); if (r) { _charAnim = r; render(); } } }, [el("b", { text: "10+1연차" }), el("span", { text: "뽑기권 " + MULTI_PAY + "장 (" + w.tickets + ")" })])
       ]);
     };
+    page.appendChild(giftBtn("뽑기"));
+    if (_charAnim && _charAnim.multi) {
+      var ms = _charAnim.multi, nNew = ms.filter(function (q) { return q.isNew; }).length;
+      page.appendChild(el("p", { class: "cg-multi-sum", role: "status" }, [el("b", { text: "10+1연차 결과 " + ms.length + "장" }), el("span", { text: " · NEW " + nNew + " · " + (_charAnim.pay === "ticket" ? "뽑기권 " + MULTI_PAY + "장" : CHAR_PULL_COIN * MULTI_PAY + "코인") + " 사용" })]));
+      var grid = el("div", { class: "cg-grid" });
+      ms.forEach(function (q, i) {
+        var cell = el("div", { class: "cg-cell tier-" + q.tier + (q.isNew ? " is-new" : "") + (q.bonus ? " is-bonus" : ""), "data-tier": q.tier, style: "animation-delay:" + (i * 0.06) + "s" }, [
+          tierBadge(q.tier),
+          vtImg(q.id, vtPath(q.id, q.id + "-base.webp"), "cg-cell-img"),
+          el("p", { class: "cg-cell-name", text: charName(q.id) }),
+          el("span", { class: "cg-cell-tag", text: q.isNew ? "NEW" : "+" + DUP_POINTS + "P" })
+        ]);
+        if (q.bonus) cell.appendChild(el("span", { class: "cg-bonus", text: "보너스" }));
+        grid.appendChild(cell);
+      });
+      page.appendChild(grid);
+      page.appendChild(payBtns(true));
+      page.appendChild(el("div", { class: "result-btns" }, [el("button", { class: "btn btn-secondary review-cta", type: "button", text: "도감 보기", onclick: function () { _charAnim = null; go("수집품", "도감"); } })]));
+      return [page];
+    }
     if (_charAnim) {
       var r = _charAnim;
       var st = el("div", { class: "cg-stage tier-" + r.tier + (r.isNew ? " is-new" : " is-dup"), "data-tier": r.tier });
@@ -20122,6 +20245,8 @@ exports.withFuzzing = withFuzzing;
      ["캐릭터", function () { _charMsg = ""; go("수집품", "도감"); }, "is-char"], ["무한 모드 랭킹", function () { _rank = null; go("복습", "랭킹"); }, "is-rank"]].forEach(function (b) {
       box.appendChild(el("button", { class: "btn main-btn " + b[2], type: "button", text: b[0], onclick: b[1] }));
     });
+    var gb = giftBadge();
+    box.appendChild(el("button", { class: "btn main-btn is-gift", type: "button", onclick: function () { _giftMsg = ""; _giftFrom = null; go("수집품", "선물함"); } }, [el("span", { text: "🎁 선물함" })].concat(gb ? [gb] : [])));
     page.appendChild(box);
     if (_mainMsg) page.appendChild(el("p", { class: "main-msg", role: "status", text: _mainMsg }));
     return [page];
@@ -20172,6 +20297,7 @@ exports.withFuzzing = withFuzzing;
       page.appendChild(backBtn("수집품", function () { go("수집품"); }));
       page.appendChild(el("h1", { text: "뽑기" }));
       page.appendChild(walletStrip(w));
+      page.appendChild(giftBtn("수집품"));
       var g = el("div", { class: "col-grid" });
       g.appendChild(el("button", { class: "btn col-btn", type: "button", onclick: function () { _charAnim = null; go("수집품", "캐릭터뽑기"); } }, [el("b", { text: "캐릭터 뽑기" }), el("span", { text: CHAR_PULL_COIN + "코인 또는 뽑기권 1장" })]));
       g.appendChild(el("button", { class: "btn col-btn", type: "button", disabled: (w.tickets > 0 && unownedCostumes().length) ? null : true, onclick: function () { go("코스튬", "뽑기"); } }, [el("b", { text: "코스튬 뽑기" }), el("span", { text: "뽑기권 1장 (" + w.tickets + "장 있음)" })]));
@@ -22276,7 +22402,7 @@ exports.withFuzzing = withFuzzing;
     if (tab === "복습" && /^(공식|공식세션|OX|OX세션|OX결과|OX지도|OX대화|OX게임오버|개념카드)$/.test(route.a)) route.a = "";
     if (tab === "복습" && route.a === "세션" && state.session && state.session.mode === "formula") { state.session = null; route.a = ""; }
     if (tab === "홈") kids = viewMain();
-    else if (tab === "수집품") kids = route.a === "캐릭터뽑기" ? viewCharGacha() : route.a === "도감" ? viewDex() : route.a === "캐릭터" ? viewCharDetail(route.b) : viewCollection(route.a);
+    else if (tab === "수집품") kids = route.a === "캐릭터뽑기" ? viewCharGacha() : route.a === "선물함" ? viewGiftBox() : route.a === "도감" ? viewDex() : route.a === "캐릭터" ? viewCharDetail(route.b) : viewCollection(route.a);
     else if (tab === "실기") kids = viewPractical(route.a);
     else if (tab === "공식") kids = viewFormulas(route.a);
     else if (tab === "코스튬") kids = viewCostume(route.a);
