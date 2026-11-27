@@ -3010,6 +3010,7 @@ body.gfx-shake .gfx { animation: gfx-shake 0.45s linear; }
 .dex-thumb { width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 9px; background: #f1f5f9; }
 .dex-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .dex-img.is-legacy { object-fit: contain; }
+.dex-img.is-legacy-full { object-fit: cover; object-position: center 4%; transform: scale(1.5); transform-origin: 50% 0; }
 .dex-cell.is-lock .dex-img { filter: brightness(0); opacity: 0.32; }
 .dex-cell .tier-badge { position: absolute; top: 0.25rem; left: 0.25rem; }
 .dex-main { position: absolute; top: 0.25rem; right: 0.25rem; background: #0f2a4a; color: #fff; font-size: 0.68rem; font-weight: 800; border-radius: 6px; padding: 0.05rem 0.3rem; }
@@ -15333,7 +15334,7 @@ exports.withFuzzing = withFuzzing;
     { id: "설정", label: "설정" }
   ];
   /* 0.7.68: 앱 버전은 이 상수 하나만 고친다(제목 옆·설정 화면이 여기서 가져간다) */
-  var APP_VERSION = "0.7.81";
+  var APP_VERSION = "0.7.82";
   window.ElecAppVersion = APP_VERSION;
   var TAB_OF = { "필기": "설정", "실기": "설정", "공식": "설정" };
 
@@ -17325,6 +17326,7 @@ exports.withFuzzing = withFuzzing;
 
   window.ElecStudyTest = {
     gachaFx: function (t, hold) { return gachaFx(t, null, { hold: hold }); },
+    showPulls: function (ids) { var ms = ids.map(function (id, i) { return { id: id, tier: charTier(id) === "기본" ? "C" : charTier(id), isNew: i % 2 === 0, pts: 5, say: "", pay: "ticket", bonus: i === ids.length - 1 }; }); _charAnim = ids.length === 1 ? ms[0] : { multi: ms, pay: "ticket" }; render(); },
     gfxTierOf: function (r) { return gfxTierOf(r); },
     buildOxQueue: buildOxQueue,
     startOxSession: startOxSession,
@@ -20029,7 +20031,7 @@ exports.withFuzzing = withFuzzing;
   function applyCharLine(s, ln) { s.talk = ln.say; s.face = ln.face; s.img = ln.img; s.sit = ln.sit; }
   function vtImg(id, src, cls) {
     var im = el("img", { class: cls || "", src: src, alt: "", draggable: "false", "data-who": id });
-    im.addEventListener("error", function () { if (!im._fb) { im._fb = 1; im.src = isVt(id) ? vtPath(id, id + "-base.webp") : gameArt(id, "normal"); } });
+    im.addEventListener("error", function () { if (!im._fb) { im._fb = 1; im.src = fullArt(id); } });
     return im;
   }
   function charSprite(who, face, img, opts) {
@@ -20040,9 +20042,20 @@ exports.withFuzzing = withFuzzing;
     st.appendChild(el("span", { class: "ox-ch-glow", "aria-hidden": "true" }));
     return el("div", { class: "ox-ch ox-ch-vt" + (img && img.indexOf("-ex-") < 0 ? " is-scene" : "") + (opts.speak ? " is-speak" : "") }, [st]);
   }
+  /* 0.7.82: 전신 그림. 버튜버는 base, 한결·여르미·마이곰이는 지금 입은 코스튬(없으면 c01) 전신. 예전에는 vt 폴더에 base가 없어 상반신(gameArt)으로 떨어졌다 */
+  function fullArt(id) {
+    if (isVt(id)) return vtPath(id, id + "-base.webp");
+    var w = state && state.wallet, wear = w && w.wear ? w.wear[id] : "";
+    return costumeArt(id, wear) || costumeArt(id, "c01") || gameArt(id, "normal");
+  }
+  function fullImg(id, cls) {
+    if (isVt(id)) return vtImg(id, fullArt(id), cls);
+    return el("img", { class: (cls || "") + " is-legacy-full", src: fullArt(id), alt: "", draggable: "false", "data-who": id });
+  }
   function charThumb(id) {
     if (isVt(id)) return vtImg(id, vtPath(id, id + "-ex-smile.webp"), "dex-img");
-    return el("img", { class: "dex-img is-legacy", src: gameArt(id, "normal"), alt: "", draggable: "false" });
+    /* 다른 버튜버 도감 칸(머리~가슴 표정 그림)과 같은 구도: 전신 코스튬 그림의 위쪽을 쓴다 */
+    return el("img", { class: "dex-img is-legacy-full", src: fullArt(id), alt: "", draggable: "false", "data-who": id });
   }
   function sceneHero(who, img, cls) {
     if (img && /-(clear|gameover|idle)-\d+\.webp$/.test(img)) return vtImg(who, img, "dress-img is-vt " + (cls || ""));
@@ -20247,7 +20260,7 @@ exports.withFuzzing = withFuzzing;
       ms.forEach(function (q, i) {
         var cell = el("div", { class: "cg-cell tier-" + q.tier + (q.isNew ? " is-new" : "") + (q.bonus ? " is-bonus" : ""), "data-tier": q.tier, style: "animation-delay:" + (i * 0.06) + "s" }, [
           tierBadge(q.tier),
-          vtImg(q.id, vtPath(q.id, q.id + "-base.webp"), "cg-cell-img"),
+          fullImg(q.id, "cg-cell-img"),
           el("p", { class: "cg-cell-name", text: charName(q.id) }),
           el("span", { class: "cg-cell-tag", text: q.isNew ? "NEW" : "+" + DUP_POINTS + "P" })
         ]);
@@ -20272,7 +20285,7 @@ exports.withFuzzing = withFuzzing;
       }
       var card = el("div", { class: "cg-card" }, [
         el("div", { class: "cg-tier" }, [tierBadge(r.tier), el("span", { class: "cg-tag", text: r.isNew ? "NEW!" : "중복 · 포인트 +" + DUP_POINTS })]),
-        vtImg(r.id, vtPath(r.id, r.id + "-base.webp"), "cg-img"),
+        fullImg(r.id, "cg-img"),
         el("p", { class: "cg-name", text: charName(r.id) }),
         el("p", { class: "cg-say" }, [el("span", {}, [whoTag(r.id), document.createTextNode(r.say)])])
       ]);
