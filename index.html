@@ -2868,6 +2868,69 @@ html[data-bg]:not([data-bg="b01"]) .app-shell.is-game .ox-scene-art::after { bac
 .tier-badge.tier-B { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
 .tier-badge.tier-C { background: #64748b; }
 .tier-badge.tier-base { background: #0f2a4a; }
+/* 0.7.81 등급별 뽑기 연출 */
+.gfx { position: fixed; inset: 0; z-index: 9000; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
+.gfx > * { pointer-events: none; }
+.gfx .gfx-skip { pointer-events: auto; position: absolute; right: 0.9rem; bottom: calc(1rem + env(safe-area-inset-bottom)); z-index: 6; padding: 0.55rem 1rem; border-radius: 999px; border: 1px solid rgba(255,255,255,0.6); background: rgba(15,23,42,0.45); color: #fff; font-weight: 800; font-size: 0.95rem; backdrop-filter: blur(4px); }
+.gfx-cv { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 4; }
+.gfx-bg { position: absolute; inset: 0; background: radial-gradient(circle at 50% 46%, #1e3a8a 0%, #0b1220 70%); animation: gfx-fade 0.25s ease-out both; }
+.gfx-beam { position: absolute; left: 50%; top: -10%; width: 26vw; max-width: 140px; height: 120%; transform: translateX(-50%) scaleX(0.1); background: linear-gradient(90deg, transparent, rgba(186,230,253,0.85), #fff, rgba(186,230,253,0.85), transparent); filter: blur(6px); animation: gfx-beam 0.9s 0.15s cubic-bezier(0.2,0.9,0.2,1) both; z-index: 2; }
+.gfx-orb { position: absolute; left: 50%; top: 46%; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: radial-gradient(circle, #fff 0%, #7dd3fc 40%, rgba(59,130,246,0) 70%); animation: gfx-orb 1.1s 0.1s ease-out both; z-index: 3; }
+.gfx-flash { position: absolute; inset: 0; background: #fff; opacity: 0; z-index: 5; animation: gfx-flash 0.5s 0.75s ease-out both; }
+.gfx-ring, .gfx-rays, .gfx-bolt, .gfx-holo { display: none; }
+.gfx-banner { position: absolute; left: 0; right: 0; top: 18%; margin: 0; text-align: center; z-index: 6; font-weight: 900; font-size: 2rem; letter-spacing: 0.04em; color: #fff; animation: gfx-banner 0.6s 0.7s cubic-bezier(0.2,1.6,0.4,1) both; }
+/* A: 보라 네온 오라 · 번개 · 회전 마법진 */
+.gfx-A .gfx-bg { background: radial-gradient(circle at 50% 46%, #6b21a8 0%, #2e1065 45%, #0b0518 80%); }
+.gfx-A .gfx-orb { background: radial-gradient(circle, #fff 0%, #e879f9 35%, rgba(168,85,247,0) 70%); box-shadow: 0 0 60px 20px rgba(192,132,252,0.7); }
+.gfx-A .gfx-beam { background: linear-gradient(90deg, transparent, rgba(232,121,249,0.85), #fff, rgba(192,132,252,0.85), transparent); }
+.gfx-A .gfx-ring { display: block; position: absolute; left: 50%; top: 46%; width: 260px; height: 260px; margin: -130px 0 0 -130px; border-radius: 50%; border: 3px solid rgba(232,121,249,0.85); box-shadow: 0 0 24px rgba(192,132,252,0.9), inset 0 0 24px rgba(192,132,252,0.8);
+  background: repeating-conic-gradient(rgba(240,171,252,0.35) 0 6deg, transparent 6deg 30deg); -webkit-mask: radial-gradient(circle, transparent 52%, #000 53%, #000 70%, transparent 71%); mask: radial-gradient(circle, transparent 52%, #000 53%, #000 70%, transparent 71%); animation: gfx-ring 1.6s linear both; z-index: 2; }
+.gfx-A .gfx-bolt { display: block; position: absolute; inset: 0; z-index: 3; background:
+  linear-gradient(115deg, transparent 47%, rgba(255,255,255,0.95) 48%, rgba(232,121,249,0.9) 49%, transparent 50%) 30% 0 / 60% 60% no-repeat,
+  linear-gradient(65deg, transparent 47%, rgba(255,255,255,0.95) 48%, rgba(192,132,252,0.9) 49%, transparent 50%) 70% 100% / 60% 60% no-repeat; filter: drop-shadow(0 0 8px #e879f9); opacity: 0; animation: gfx-bolt 0.9s 0.3s steps(1) both; }
+.gfx-A .gfx-flash { background: #f5d0fe; }
+.gfx-A .gfx-banner { color: #f5d0fe; text-shadow: 0 0 12px #c026d3, 0 0 28px #a855f7; }
+/* S: 일반→보라→금빛 승격 + 태양광선 + 홀로그램 + 흔들림 */
+.gfx-S .gfx-bg { animation: gfx-sbg 1.85s ease-out both; }
+.gfx-S .gfx-orb { animation: gfx-sorb 1.6s ease-out both; }
+.gfx-S .gfx-beam { background: linear-gradient(90deg, transparent, rgba(253,230,138,0.9), #fff, rgba(250,204,21,0.9), transparent); animation: gfx-beam 0.9s 0.5s cubic-bezier(0.2,0.9,0.2,1) both; }
+.gfx-S .gfx-rays { display: block; position: absolute; left: 50%; top: 46%; width: 220vmax; height: 220vmax; margin: -110vmax 0 0 -110vmax; z-index: 1;
+  background: repeating-conic-gradient(rgba(253,224,71,0.55) 0 7deg, rgba(253,224,71,0) 7deg 18deg); -webkit-mask: radial-gradient(circle, #000 0%, rgba(0,0,0,0.6) 25%, transparent 50%); mask: radial-gradient(circle, #000 0%, rgba(0,0,0,0.6) 25%, transparent 50%); opacity: 0; animation: gfx-rays 1.85s 0.5s linear both; }
+.gfx-S .gfx-holo { display: block; position: absolute; inset: -20%; z-index: 2; background: linear-gradient(120deg, rgba(244,114,182,0.0), rgba(244,114,182,0.35), rgba(250,204,21,0.35), rgba(74,222,128,0.3), rgba(96,165,250,0.35), rgba(167,139,250,0.35), rgba(244,114,182,0)); background-size: 200% 200%; mix-blend-mode: screen; opacity: 0; animation: gfx-holo 1.4s 0.6s ease-in-out both; }
+.gfx-S .gfx-flash { background: #fef3c7; animation: gfx-flash 0.55s 0.5s ease-out both; }
+.gfx-S .gfx-banner { top: 16%; font-size: 2.3rem; background: linear-gradient(90deg, #fde68a, #facc15, #fb923c, #f472b6, #a78bfa, #60a5fa, #fde68a); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 2px 0 #92400e) drop-shadow(0 0 14px rgba(250,204,21,0.9)); animation: gfx-banner 0.6s 0.75s cubic-bezier(0.2,1.6,0.4,1) both, gfx-shimmer 1.2s 0.75s linear infinite; }
+body.gfx-shake .gfx { animation: gfx-shake 0.45s linear; }
+.gfx.is-reduce *, .gfx.is-reduce { animation-duration: 0.01s !important; animation-delay: 0s !important; }
+.gfx.is-reduce .gfx-flash { opacity: 0 !important; }
+@keyframes gfx-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gfx-beam { 0% { transform: translateX(-50%) scaleX(0.05); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(-50%) scaleX(1); opacity: 0.85; } }
+@keyframes gfx-orb { 0% { transform: scale(0.2); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(2.2); opacity: 0.9; } }
+@keyframes gfx-flash { 0% { opacity: 0; } 25% { opacity: 0.85; } 100% { opacity: 0; } }
+@keyframes gfx-banner { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes gfx-ring { 0% { transform: scale(0.4) rotate(0); opacity: 0; } 25% { opacity: 1; } 100% { transform: scale(1.25) rotate(240deg); opacity: 0.9; } }
+@keyframes gfx-bolt { 0% { opacity: 0; } 10% { opacity: 1; } 22% { opacity: 0; } 40% { opacity: 1; transform: scaleX(-1); } 52% { opacity: 0; } 70% { opacity: 0.9; transform: none; } 80% { opacity: 0; } }
+@keyframes gfx-sbg { 0% { background: radial-gradient(circle at 50% 46%, #1e3a8a 0%, #0b1220 70%); } 22% { background: radial-gradient(circle at 50% 46%, #6b21a8 0%, #1a0b2e 70%); } 30% { background: radial-gradient(circle at 50% 46%, #fde68a 0%, #b45309 40%, #1c1003 85%); } 100% { background: radial-gradient(circle at 50% 46%, #fef3c7 0%, #f59e0b 30%, #78350f 70%, #1c1003 100%); } }
+@keyframes gfx-sorb { 0% { transform: scale(0.3); background: radial-gradient(circle, #fff 0%, #7dd3fc 40%, rgba(59,130,246,0) 70%); } 25% { transform: scale(0.8); background: radial-gradient(circle, #fff 0%, #e879f9 40%, rgba(168,85,247,0) 70%); } 32% { transform: scale(1.6); background: radial-gradient(circle, #fff 0%, #facc15 40%, rgba(250,204,21,0) 70%); } 100% { transform: scale(2.6); background: radial-gradient(circle, #fff 0%, #fde68a 45%, rgba(250,204,21,0) 70%); box-shadow: 0 0 90px 40px rgba(250,204,21,0.6); } }
+@keyframes gfx-rays { 0% { opacity: 0; transform: rotate(0); } 12% { opacity: 1; } 100% { opacity: 0.95; transform: rotate(50deg); } }
+@keyframes gfx-holo { 0% { opacity: 0; background-position: 0% 50%; } 30% { opacity: 1; } 100% { opacity: 0.55; background-position: 100% 50%; } }
+@keyframes gfx-shimmer { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+@keyframes gfx-shake { 0%,100% { transform: none; } 15% { transform: translate(-6px, 3px); } 30% { transform: translate(5px, -4px); } 45% { transform: translate(-4px, -2px); } 60% { transform: translate(4px, 4px); } 75% { transform: translate(-2px, 2px); } }
+/* 결과 카드 등급 글로우 */
+.cg-cell.tier-B, .cg-cell.tier-C { border-color: #60a5fa; box-shadow: 0 0 6px rgba(96,165,250,0.45); }
+.cg-cell.tier-A { border-color: #a855f7; box-shadow: 0 0 10px rgba(168,85,247,0.75); overflow: visible; }
+.cg-cell.tier-A::after, .cg-cell.tier-S::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.65) 50%, transparent 65%); background-size: 250% 100%; animation: cg-shim 2.2s linear infinite; }
+.cg-cell.tier-S { border: 2px solid transparent; background: linear-gradient(#fffbeb, #fffbeb) padding-box, linear-gradient(135deg, #facc15, #fb923c, #f472b6, #a78bfa, #60a5fa, #4ade80, #facc15) border-box; box-shadow: 0 0 14px rgba(250,204,21,0.85), 0 0 26px rgba(244,114,182,0.4); }
+.cg-cell.tier-S::before { content: ""; position: absolute; left: 50%; top: 40%; width: 160%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none; z-index: 0; background: repeating-conic-gradient(rgba(250,204,21,0.28) 0 8deg, transparent 8deg 24deg); -webkit-mask: radial-gradient(circle, #000 20%, transparent 62%); mask: radial-gradient(circle, #000 20%, transparent 62%); animation: cg-spin 8s linear infinite; }
+.cg-cell > * { position: relative; z-index: 1; }
+.cg-cell.tier-S .tier-badge, .cg-cell.tier-A .tier-badge { position: absolute; }
+.cg-cell.is-bonus.tier-S { background: linear-gradient(#fff1f2, #fff1f2) padding-box, linear-gradient(135deg, #facc15, #fb923c, #f472b6, #a78bfa, #60a5fa, #4ade80, #facc15) border-box; }
+.cg-cell .cg-bonus { position: absolute; z-index: 2; }
+.cg-stage.tier-B .cg-card, .cg-stage.tier-C .cg-card { box-shadow: 0 0 0 2px #60a5fa, 0 0 16px rgba(96,165,250,0.5); }
+.cg-stage.tier-A .cg-card { box-shadow: 0 0 0 2px #a855f7, 0 0 24px rgba(168,85,247,0.8); }
+.cg-stage.tier-S .cg-card { box-shadow: 0 0 0 3px #facc15, 0 0 30px rgba(250,204,21,0.9), 0 0 50px rgba(244,114,182,0.45); }
+@keyframes cg-shim { from { background-position: 150% 0; } to { background-position: -100% 0; } }
+@keyframes cg-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .cg-cell::after, .cg-cell::before { animation: none; } }
 /* 0.7.80 선물함 · 10+1연차 */
 .gift-btn, .main-btn.is-gift { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; }
 .gift-dot { position: absolute; top: -0.4rem; right: -0.4rem; min-width: 1.35rem; height: 1.35rem; padding: 0 0.3rem; border-radius: 999px; background: #ef4444; color: #fff; font-size: 0.78rem; font-weight: 800; line-height: 1.35rem; text-align: center; box-shadow: 0 0 0 2px #fff; }
@@ -2890,15 +2953,12 @@ html[data-bg]:not([data-bg="b01"]) .app-shell.is-game .ox-scene-art::after { bac
 .cg-multi-sum { margin: 0; font-size: 0.95rem; }
 .cg-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.4rem; }
 .cg-cell { position: relative; display: flex; flex-direction: column; align-items: center; padding: 0.3rem 0.2rem 0.35rem; border-radius: 0.7rem; background: rgba(255,255,255,0.95); border: 2px solid #cbd5e1; color: #0f172a; min-width: 0; animation: cg-pop 0.35s ease-out both; }
-.cg-cell.tier-S { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,0.6); }
-.cg-cell.tier-A { border-color: #a855f7; }
-.cg-cell.tier-B { border-color: #3b82f6; }
 .cg-cell .tier-badge { position: absolute; top: 0.2rem; left: 0.2rem; font-size: 0.65rem; z-index: 1; }
 .cg-cell-img { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; }
 .cg-cell-name { margin: 0.1rem 0 0; font-size: 0.7rem; font-weight: 700; text-align: center; line-height: 1.15; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cg-cell-tag { font-size: 0.62rem; color: #64748b; }
 .cg-cell.is-new .cg-cell-tag { color: #dc2626; font-weight: 800; }
-.cg-cell.is-bonus { border-color: #ef4444; background: #fff1f2; }
+.cg-cell.is-bonus:not(.tier-S):not(.tier-A) { background: #fff1f2; }
 .cg-bonus { position: absolute; top: -0.45rem; right: -0.2rem; padding: 0.05rem 0.4rem; border-radius: 999px; background: #ef4444; color: #fff; font-size: 0.66rem; font-weight: 800; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
 @keyframes cg-pop { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .cg-cell { animation: none; } }
@@ -15273,7 +15333,7 @@ exports.withFuzzing = withFuzzing;
     { id: "설정", label: "설정" }
   ];
   /* 0.7.68: 앱 버전은 이 상수 하나만 고친다(제목 옆·설정 화면이 여기서 가져간다) */
-  var APP_VERSION = "0.7.80";
+  var APP_VERSION = "0.7.81";
   window.ElecAppVersion = APP_VERSION;
   var TAB_OF = { "필기": "설정", "실기": "설정", "공식": "설정" };
 
@@ -17264,6 +17324,8 @@ exports.withFuzzing = withFuzzing;
   }
 
   window.ElecStudyTest = {
+    gachaFx: function (t, hold) { return gachaFx(t, null, { hold: hold }); },
+    gfxTierOf: function (r) { return gfxTierOf(r); },
     buildOxQueue: buildOxQueue,
     startOxSession: startOxSession,
     answerOx: answerOx,
@@ -20076,6 +20138,88 @@ exports.withFuzzing = withFuzzing;
     page.appendChild(el("button", { class: "btn btn-secondary review-cta", type: "button", text: "캐릭터 뽑기 하러 가기", onclick: function () { _charAnim = null; go("수집품", "캐릭터뽑기"); } }));
     return [page];
   }
+  /* 0.7.81: 등급별 뽑기 연출. 결과를 보여 주기 전 짧은 전체 화면 연출(일반 · A · S). 10+1연차는 최고 등급 기준. 탭/건너뛰기로 바로 결과 */
+  var GFX_MS = { N: 1300, A: 1600, S: 1850 };
+  function gfxTierOf(r) {
+    var ts = r && r.multi ? r.multi.map(function (q) { return q.tier; }) : [r && r.tier];
+    return ts.indexOf("S") >= 0 ? "S" : ts.indexOf("A") >= 0 ? "A" : "N";
+  }
+  function gfxSound(t) {
+    var fs = g77Set();
+    if (fs.vib && navigator.vibrate) { try { navigator.vibrate({ N: [15], A: [30, 40, 60], S: [40, 50, 40, 50, 160] }[t]); } catch (e) {} }
+    if (!fs.snd) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      if (!_g77ac) _g77ac = new AC();
+      var ac = _g77ac; if (ac.state === "suspended" && ac.resume) ac.resume();
+      var seq = {
+        N: [[784, 0.25, 0.1, "sine"], [988, 0.34, 0.1, "sine"], [1319, 0.44, 0.22, "sine"]],
+        A: [[392, 0.15, 0.12, "sawtooth"], [587, 0.3, 0.12, "triangle"], [784, 0.45, 0.12, "triangle"], [1175, 0.6, 0.35, "triangle"], [1568, 0.62, 0.3, "sine"]],
+        S: [[262, 0.0, 0.25, "sawtooth"], [523, 0.45, 0.12, "triangle"], [659, 0.57, 0.12, "triangle"], [784, 0.69, 0.12, "triangle"], [1047, 0.82, 0.55, "triangle"], [1319, 0.84, 0.55, "sine"], [1568, 0.86, 0.6, "sine"], [2093, 1.1, 0.5, "sine"]]
+      }[t];
+      var t0 = ac.currentTime + 0.02;
+      seq.forEach(function (n) {
+        var o = ac.createOscillator(), gn = ac.createGain();
+        o.type = n[3]; o.frequency.value = n[0];
+        var v = n[3] === "sawtooth" ? 0.05 : 0.11;
+        gn.gain.setValueAtTime(0.0001, t0 + n[1]); gn.gain.exponentialRampToValueAtTime(v, t0 + n[1] + 0.015); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + n[1] + n[2]);
+        o.connect(gn); gn.connect(ac.destination); o.start(t0 + n[1]); o.stop(t0 + n[1] + n[2] + 0.05);
+      });
+    } catch (e) {}
+  }
+  var _gfxTimer = null;
+  function gachaFx(t, done, opt) {
+    opt = opt || {};
+    var old = document.getElementById("gfx"); if (old) old.remove();
+    if (_gfxTimer) { clearTimeout(_gfxTimer); _gfxTimer = null; }
+    var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    var ended = false, raf = 0;
+    var finish = function () {
+      if (ended) return; ended = true;
+      if (_gfxTimer) { clearTimeout(_gfxTimer); _gfxTimer = null; }
+      if (raf) cancelAnimationFrame(raf);
+      var n = document.getElementById("gfx"); if (n) n.remove();
+      document.body.classList.remove("gfx-shake");
+      if (done) done();
+    };
+    var cv = el("canvas", { class: "gfx-cv", "aria-hidden": "true" });
+    var kids = [cv, el("div", { class: "gfx-bg", "aria-hidden": "true" }), el("div", { class: "gfx-rays", "aria-hidden": "true" }), el("div", { class: "gfx-ring", "aria-hidden": "true" }),
+      el("div", { class: "gfx-beam", "aria-hidden": "true" }), el("div", { class: "gfx-orb", "aria-hidden": "true" }), el("div", { class: "gfx-flash", "aria-hidden": "true" })];
+    if (t === "A") kids.push(el("div", { class: "gfx-bolt", "aria-hidden": "true" }));
+    if (t === "S") kids.push(el("div", { class: "gfx-holo", "aria-hidden": "true" }), el("p", { class: "gfx-banner", text: "★ S급 당첨! ★" }));
+    if (t === "A") kids.push(el("p", { class: "gfx-banner", text: "A급 등장!" }));
+    kids.push(el("button", { class: "gfx-skip", type: "button", text: "건너뛰기 ›", onclick: function (e) { e.stopPropagation(); finish(); } }));
+    var ov = el("div", { id: "gfx", class: "gfx gfx-" + t + (reduce ? " is-reduce" : ""), role: "dialog", "aria-label": (t === "S" ? "S급" : t === "A" ? "A급" : "일반") + " 뽑기 연출. 누르면 결과", "data-tier": t, onclick: finish }, kids);
+    document.body.appendChild(ov);
+    gfxSound(t);
+    if (t === "S" && !reduce) setTimeout(function () { if (!ended) document.body.classList.add("gfx-shake"); }, 560);
+    if (!reduce) {
+      var ctx = cv.getContext && cv.getContext("2d");
+      if (ctx) {
+        var W = cv.width = Math.min(innerWidth, 900), H = cv.height = Math.min(innerHeight, 1200);
+        var cols = { N: ["#bae6fd", "#7dd3fc", "#ffffff", "#93c5fd"], A: ["#e9d5ff", "#c084fc", "#f0abfc", "#a855f7", "#ffffff"], S: ["#fde68a", "#facc15", "#fb923c", "#f472b6", "#a78bfa", "#60a5fa", "#4ade80", "#ffffff"] }[t];
+        var N = { N: 46, A: 80, S: 150 }[t], ps = [], t0 = performance.now();
+        for (var i = 0; i < N; i++) {
+          var conf = t === "S" && i % 2 === 0, ang = Math.random() * Math.PI * 2, sp = (t === "N" ? 1.2 : t === "A" ? 2.4 : 3.6) * (0.4 + Math.random());
+          ps.push(conf ? { x: Math.random() * W, y: -20 - Math.random() * H * 0.6, vx: (Math.random() - 0.5) * 1.6, vy: 2 + Math.random() * 3, r: 3 + Math.random() * 4, c: cols[i % cols.length], rot: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3, k: "c", d: 300 + Math.random() * 300 }
+            : { x: W / 2, y: H * 0.46, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - (t === "N" ? 0.6 : 0), r: 1.2 + Math.random() * (t === "N" ? 2 : 2.8), c: cols[i % cols.length], k: "s", d: (t === "S" ? 520 : 200) + Math.random() * 260 });
+        }
+        var step = function (now) {
+          var el_ = now - t0; ctx.clearRect(0, 0, W, H);
+          ps.forEach(function (p) {
+            if (el_ < p.d) return;
+            p.x += p.vx; p.y += p.vy;
+            if (p.k === "c") { p.vy += 0.03; p.rot += p.vr; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c; ctx.fillRect(-p.r, -p.r * 0.5, p.r * 2, p.r); ctx.restore(); }
+            else { p.vx *= 0.985; p.vy = p.vy * 0.985 + 0.012; var a = Math.max(0, 1 - (el_ - p.d) / 1400); ctx.globalAlpha = a; ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill(); ctx.globalAlpha = 1; }
+          });
+          if (!ended) raf = requestAnimationFrame(step);
+        };
+        raf = requestAnimationFrame(step);
+      }
+    }
+    if (!opt.hold) _gfxTimer = setTimeout(finish, reduce ? 500 : GFX_MS[t]);
+    return finish;
+  }
   var _charAnim = null, _charMsg = "", _mainTalk = null, _detailTalk = null;
   function viewCharGacha() {
     var w = ensureWallet(), c = w.chars;
@@ -20086,13 +20230,13 @@ exports.withFuzzing = withFuzzing;
     var payBtns = function (again) {
       return el("div", { class: "cg-pay" }, [
         el("button", { class: "btn cg-pay-coin", type: "button", disabled: w.coins >= CHAR_PULL_COIN ? null : true, text: (again ? "한 번 더 · " : "") + CHAR_PULL_COIN + "코인",
-          onclick: function () { var r = charPull("coin"); if (r) { _charAnim = r; render(); } } }),
+          onclick: function () { var r = charPull("coin"); if (r) { _charAnim = r; gachaFx(gfxTierOf(r), render); } } }),
         el("button", { class: "btn btn-secondary cg-pay-ticket", type: "button", disabled: w.tickets >= 1 ? null : true, text: (again ? "한 번 더 · " : "") + "뽑기권 1장 (" + w.tickets + ")",
-          onclick: function () { var r = charPull("ticket"); if (r) { _charAnim = r; render(); } } }),
+          onclick: function () { var r = charPull("ticket"); if (r) { _charAnim = r; gachaFx(gfxTierOf(r), render); } } }),
         el("button", { class: "btn cg-multi cg-multi-coin", type: "button", disabled: w.coins >= CHAR_PULL_COIN * MULTI_PAY ? null : true,
-          onclick: function () { var r = charPullMulti("coin"); if (r) { _charAnim = r; render(); } } }, [el("b", { text: "10+1연차" }), el("span", { text: CHAR_PULL_COIN * MULTI_PAY + "코인" })]),
+          onclick: function () { var r = charPullMulti("coin"); if (r) { _charAnim = r; gachaFx(gfxTierOf(r), render); } } }, [el("b", { text: "10+1연차" }), el("span", { text: CHAR_PULL_COIN * MULTI_PAY + "코인" })]),
         el("button", { class: "btn cg-multi cg-multi-ticket", type: "button", disabled: w.tickets >= MULTI_PAY ? null : true,
-          onclick: function () { var r = charPullMulti("ticket"); if (r) { _charAnim = r; render(); } } }, [el("b", { text: "10+1연차" }), el("span", { text: "뽑기권 " + MULTI_PAY + "장 (" + w.tickets + ")" })])
+          onclick: function () { var r = charPullMulti("ticket"); if (r) { _charAnim = r; gachaFx(gfxTierOf(r), render); } } }, [el("b", { text: "10+1연차" }), el("span", { text: "뽑기권 " + MULTI_PAY + "장 (" + w.tickets + ")" })])
       ]);
     };
     page.appendChild(giftBtn("뽑기"));
